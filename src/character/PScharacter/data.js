@@ -17609,7 +17609,7 @@ export const data = {
                 check: () => true,
                 content: async function (event, trigger, player) {
                     if (player.countDiscardableCards(player, 'hes') > 0) {
-                        const { result } = await player.chooseToDiscard([1, 2], 'hes', '是否弃置至多两张牌，恢复等量的装备栏？', false).set('ai', get.disvalue);
+                        const result = await player.chooseToDiscard([1, 2], 'hes', '是否弃置至多两张牌，恢复等量的装备栏？', false).set('ai', get.disvalue).forResult();
                         if (result.cards && result.cards.length) {
                             const num = result.cards.length;
                             if (num >= player.countDisabledSlot()) {
@@ -18136,9 +18136,10 @@ export const data = {
                     if (player.storage.PSrenjie === void 0) player.storage.PSrenjie = event.triggername === "damageEnd" ? trigger.num : trigger.getl(player).cards2.length;
                     const skills = lib.skill.PSrenjie.derivation.filter(skill => !player.hasSkill(skill));
                     const choiceList = skills.map(skill => get.translation(skill) + '：' + get.translation(skill + '_info'));
-                    const { result: { control } } = await player.chooseControl(skills)
+                    const { control } = await player.chooseControl(skills)
                         .set('prompt', '忍戒：选择获得一个技能')
-                        .set('choiceList', choiceList).set('displayIndex', false).set('ai', () => get.event().controls.randomGet());
+                        .set('choiceList', choiceList).set('displayIndex', false).set('ai', () => get.event().controls.randomGet())
+                        .forResult();
                     await player.addSkills(control);
                     player.storage.PSrenjie--;
                     if (player.storage.PSrenjie > 0) {
@@ -18153,7 +18154,7 @@ export const data = {
                         return;
                     };
                     const choiceList = skills.map((skill, i) => [i, get.translation(skill) + '：' + get.translation(skill + '_info')]);
-                    const { result: { links } } = await player.chooseButton([
+                    const { links } = await player.chooseButton([
                         `忍戒：请选择获得${get.cnNumber(num)}个技能`, [choiceList, 'textbutton']
                     ])
                         .set('dialog', event.videoId)
@@ -18161,7 +18162,8 @@ export const data = {
                         .set('selectButton', num)
                         .set('ai', function (button) {
                             return 1 + Math.random();
-                        });
+                        })
+                        .forResult();
                     player.addSkills(links.map(i => {
                         player.popup(skills[i]);
                         return skills[i];
@@ -18586,14 +18588,15 @@ export const data = {
                         },
                         async content(event, trigger, player) {
                             const list = ['令此伤害+1', '令此伤害-1', 'cancel2'];
-                            const { result: { control } } = await player.chooseControl(list)
+                            const { control } = await player.chooseControl(list)
                                 .set('prompt', `凌人：是否改变对${get.translation(trigger.player)}造成的伤害？`)
                                 .set('ai', function () {
                                     const att = get.attitude(_status.event.player, trigger.player);
                                     if (att == 0) return 'cancel2';
                                     if (att > 0) return '令此伤害-1';
                                     return '令此伤害+1';
-                                });
+                                })
+                                .forResult();
                             if (control === '令此伤害+1') trigger.num++;
                             else if (control === '令此伤害-1') trigger.num--;
                         }
@@ -18629,12 +18632,12 @@ export const data = {
                     const players = game.filterPlayer(current => filter(current));
                     if (players.length === 1) Targets.addArray(players);
                     else if (players.length > 1) {
-                        const { result: { targets } } = await player.chooseTarget(function (card, player, target) {
+                        const { targets } = await player.chooseTarget(function (card, player, target) {
                             return players.includes(target);
                         }, true).set('ai', function (target) {
                             if (get.attitude(_status.event.player, target) < 0) return 100;
                             return 1;
-                        });
+                        }).forResult();
                         Targets.addArray(targets);
                     }
                     Targets = Targets.filter(current => current.isAlive() && current.isIn()).sortBySeat();
@@ -18804,9 +18807,9 @@ export const data = {
                                 return get.tag({ name: name }, 'damage') > 0 && player.hasUseTarget({ name: name, isCard: true });
                             });
                             if (list.length) {
-                                const { result: { bool, links } } = await player.chooseButton(['当先：视为使用一张伤害类锦囊牌', [list, 'vcard']], true).set('ai', button => {
+                                const { bool, links } = await player.chooseButton(['当先：视为使用一张伤害类锦囊牌', [list, 'vcard']], true).set('ai', button => {
                                     return get.player().getUseValue({ name: button.link[2] });
-                                });
+                                }).forResult();
                                 if (bool) {
                                     var name = links[0][2];
                                     player.chooseUseTarget({ name: name, isCard: true }, true, false).logSkill = 'PSdangxian';
@@ -22338,14 +22341,14 @@ export const data = {
                     const target = trigger.player;
                     const count = lib.skill.PShanying.getShaCount();
                     const list = [`令${get.translation(trigger.player)}受到一点无来源伤害`, `摸${get.cnNumber(count)}张牌`];
-                    const { result: { index } } = await player.chooseControlList(list, false).set("ai", function (event, player) {
+                    const { index } = await player.chooseControlList(list, false).set("ai", function (event, player) {
                         const damageEff = get.damageEffect(target, player, player);
                         if (!count && damageEff > 0) return 0;
                         if (target.hp <= 1 && damageEff > 0) return 0;
                         if (count >= 2) return 1;
                         if (get.attitude(player, target) <= 0 && damageEff > 0) return 0;
                         return 1;
-                    });
+                    }).forResult();
                     switch (index) {
                         case 0: {
                             await target.damage("nosource");
