@@ -52,5 +52,10 @@ onPrecontent(async () => {
                 return `${get.prefixSpan('PS')}${get.prefixSpan('界')}`;
             },
         });
+        lib.namePrefix.set('PS谋', {
+            getSpan: (prefix, name) => {
+                return `${get.prefixSpan('PS')}${get.prefixSpan('谋')}`;
+            },
+        });
     }
 });

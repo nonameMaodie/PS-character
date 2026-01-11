@@ -22590,6 +22590,7 @@ export const data = {
         },
         sort: sort.PScharacter_qun,
         translate: {
+            PShanbingjiangirl: "PS寒冰剑少女",
             PShanying: "寒英",
             PShanying_info: "你即将造成伤害时，你可以防止此伤害并弃置该角色至多X张牌（X弃牌堆中“杀”的数量）。",
             PSaoshuang: "傲霜",
