@@ -22231,7 +22231,7 @@ export const data = {
             dieAudios: [],
             trashBin: [],
         },
-        PShanbingjiangirl: "由“一顿七只屑狐狸”设计",
+        intro: "由“一顿七只屑狐狸”设计",
         skills: {
             PShanying: {
                 trigger: {
@@ -22599,5 +22599,27 @@ export const data = {
             PSdouxie_info: "出牌阶段限X次，你可以视为对一名其他角色使用一张“冰”杀（不计入使用次数且无次数限制，X弃牌堆中“杀”的数量）。",
         },
         rank: rank.legend
+    },
+    PSsb_zuoci: {
+        info: {
+            sex: "male",
+            group: "qun",
+            hp: 3,
+            skills: ["PShuanqu", "PSxicao"],
+            dieAudios: [],
+            trashBin: [],
+        },
+        skills: {
+
+        },
+        sort: sort.PScharacter_qun,
+        translate: {
+            PSsb_zuoci: "PS谋左慈",
+            PSsb_zuoci_prefix: "PS谋",
+            PShuanqu: "幻取",
+            PShuanqu_info: "你可以如手牌般使用或打出仁区里的牌。",
+            PSxicao: "戏曹",
+            PSxicao_info: ""
+        }
     }
 }
