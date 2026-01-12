@@ -57,5 +57,10 @@ onPrecontent(async () => {
                 return `${get.prefixSpan('PS')}${get.prefixSpan('谋')}`;
             },
         });
+        lib.namePrefix.set('PS势', {
+            getSpan: (prefix, name) => {
+                return `${get.prefixSpan('PS')}<span data-nature="purplemm" style="color: rgb(125, 38, 205);">势</span>`;
+            },
+        });
     }
 });

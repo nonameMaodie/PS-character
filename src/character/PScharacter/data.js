@@ -22037,7 +22037,7 @@ export const data = {
                                 use_targets.push(target);
                             }
                         }
-                        await game.asyncDelay(0.5);
+                        await game.delay(0.5);
                         await player.useCard(use_card, use_targets);
                     } else {
                         for (const target of targets) {
@@ -22206,6 +22206,10 @@ export const data = {
                 },
             },
         },
+        replace: [
+            "PSsb_zhangfei",
+            "PSzhangfei",
+        ],
         sort: sort.PScharacter_shu,
         translate: {
             PSsb_zhangfei: "PS谋张飞",
@@ -22613,8 +22617,189 @@ export const data = {
             trashBin: [],
         },
         skills: {
+            PShuanqu: {
+                group: ["PShuanqu_use"],
+                original_game_updateRenku: null,
+                init: function (player, skill) {
+                    lib.skill.PShuanqu.original_game_updateRenku = game.updateRenku;
 
+                    game.updateRenku = function (...args) {
+                        const result = lib.skill.PShuanqu.original_game_updateRenku.apply(this, args);
+
+                        lib.skill.PShuanqu.checkRenku(player);
+                        return result;
+                    };
+                },
+                checkRenku(player) {
+                    const idList = player.getCards("s", card => card.hasGaintag("PShuanqu")).map(i => i._cardid);
+                    const cards = _status.renku.slice().filter(i => !idList.includes(i.cardid));
+
+                    if (cards.length) {
+                        const cards2 = cards.map(card => {
+                            var cardx = ui.create.card();
+                            cardx.init(get.cardInfo(card));
+                            cardx._cardid = card.cardid;
+                            return cardx;
+                        });
+                        player.directgains(cards2, null, "PShuanqu");
+                    }
+
+                    const cards3 = player.getCards("s", card => card.hasGaintag("PShuanqu")).filter(c => !_status.renku.find(r => r.cardid === c._cardid));
+                    if (cards3.length) {
+                        if (player.isOnline2()) {
+                            player.send(
+                                function (cards, player) {
+                                    cards.forEach(i => i.delete());
+                                    if (player == game.me) {
+                                        ui.updatehl();
+                                    }
+                                },
+                                cards3,
+                                player
+                            );
+                        }
+                        cards3.forEach(i => i.delete());
+                        if (player == game.me) {
+                            ui.updatehl();
+                        }
+                    }
+                },
+                onremove(player) {
+                    game.updateRenku = lib.skill.PShuanqu.original_game_updateRenku || game.updateRenku;
+                    const cards2 = player.getCards("s", card => {
+                        return card.hasGaintag("PShuanqu");
+                    });
+                    if (player.isOnline2()) {
+                        player.send(
+                            function (cards, player) {
+                                cards.forEach(i => i.delete());
+                                if (player == game.me) {
+                                    ui.updatehl();
+                                }
+                            },
+                            cards2,
+                            player
+                        );
+                    }
+                    cards2.forEach(i => i.delete());
+                    if (player == game.me) {
+                        ui.updatehl();
+                    }
+                },
+                subSkill: {
+                    use: {
+                        trigger: {
+                            player: ["useCardBefore", "respondBefore"],
+                        },
+                        charlotte: true,
+                        forced: true,
+                        popup: false,
+                        firstDo: true,
+                        filter(event, player) {
+                            const cards = player.getCards("s", card => card.hasGaintag("PShuanqu") && card._cardid);
+                            return (
+                                event.cards &&
+                                event.cards.some(card => {
+                                    return cards.includes(card);
+                                })
+                            );
+                        },
+                        async content(event, trigger, player) {
+                            const idList = player.getCards("s", card => card.hasGaintag("PShuanqu")).map(i => i._cardid);
+                            const cards = [];
+                            cards.addArray(_status.renku.slice().filter(i => idList.includes(i.cardid)));
+
+                            const cards2 = [];
+                            for (const card of trigger.cards) {
+                                const cardx = cards.find(cardx => cardx.cardid === card._cardid);
+                                if (cardx) {
+                                    cards2.push(cardx);
+                                } else {
+                                    cards2.push(card);
+                                }
+                            }
+                            const cards3 = trigger.cards.slice().filter(card => card.hasGaintag("PShuanqu"));
+                            trigger.cards = cards2;
+                            trigger.card.cards = cards2;
+                            if (player.isOnline2()) {
+                                player.send(
+                                    function (cards, player) {
+                                        cards.forEach(i => i.delete());
+                                        if (player == game.me) {
+                                            ui.updatehl();
+                                        }
+                                    },
+                                    cards3,
+                                    player
+                                );
+                            }
+                            cards3.forEach(i => i.delete());
+                            if (player == game.me) {
+                                ui.updatehl();
+                            }
+                        },
+                    },
+                },
+            },
+            PSxicao: {
+                audio: 2,
+                trigger: {
+                    player: "useCardToPlayered",
+                    target: "useCardToTargeted",
+                },
+                filter(event, player, name) {
+                    if (event.targets.length !== 1) {
+                        return false;
+                    }
+                    if (player.getStorage("PSxicao_used").includes(name.slice(9))) return false;
+                    if (name === "useCardToPlayered") {
+                        return event.target.countCards("he") > 0;
+                    }
+                    return player.countCards("he") > 0;
+                },
+                async cost(event, trigger, player) {
+                    const target = trigger.target;
+                    if (event.triggername == "useCardToPlayered") {
+                        const { bool, links } = await player.choosePlayerCard(target, "he", false, `戏曹：是否将${get.translation(target)}的一张牌置入仁库中，然后令${get.translation(trigger.card)}额外结算一次`).forResult();
+                        event.result = {
+                            bool,
+                            cards: links
+                        };
+                    } else {
+                        const { bool, cards } = await player.chooseCard("he", false, `戏曹：是否将你的一张牌置于仁库中，然后令${get.translation(trigger.card)}对你无效`).forResult();
+                        event.result = {
+                            bool,
+                            cards
+                        };
+                    }
+                },
+                async content(event, trigger, player) {
+                    const card = event.cards[0];
+                    const target = trigger.target;
+                    target.$throw(card, 1000);
+                    game.log(target, "将", card, "置入了仁库");
+                    target.lose(card, ui.special, "toRenku");
+                    if (event.triggername == "useCardToPlayered") {
+                        trigger.getParent().effectCount++;
+                    } else {
+                        trigger.getParent().excluded.add(player);
+                    }
+                    player.addTempSkill("PSxicao_used");
+                    player.markAuto("PSxicao_used", event.triggername.slice(9));
+                },
+                subSkill: {
+                    used: {
+                        charlotte: true,
+                        onremove: true,
+                        sub: true,
+                    },
+                },
+            }
         },
+        replace: [
+            "PSsb_zuoci",
+            "PSzuoci",
+        ],
         sort: sort.PScharacter_qun,
         translate: {
             PSsb_zuoci: "PS谋左慈",
@@ -22622,7 +22807,87 @@ export const data = {
             PShuanqu: "幻取",
             PShuanqu_info: "你可以如手牌般使用或打出仁区里的牌。",
             PSxicao: "戏曹",
-            PSxicao_info: ""
-        }
-    }
+            PSxicao_info: "每回合各限一次，当你使用牌指定/成为牌的唯一目标后，你可以将目标角色/你的一张牌置入仁区，令此牌额外结算一次/对你无效。"
+        },
+        rank: rank.epic,
+    },
+    PSpot_yuji: {
+        info: {
+            sex: "male",
+            group: "qun",
+            hp: 3,
+            skills: ["PSfuji", "PSdaozhuan"],
+            dieAudios: [],
+            trashBin: [],
+        },
+        skills: {
+            PSfuji: {
+                audio: "potfuji",
+                global: "PSfuji_global",
+                subSkill: {
+                    global: {
+                        enable: "phaseUse",
+                        filter(event, player) {
+                            if (player.hasSkill("PSfuji_used")) {
+                                return false;
+                            }
+                            return game.filterPlayer(function (current) {
+                                return current != player && current.hasSkill("PSfuji") && player.countCards("he");
+                            }).length > 0;
+                        },
+                        prompt: "令一名角色交给你一张牌",
+                        filterTarget(card, player, target) {
+                            return target.hasSkill("potfuji");
+                        },
+                        selectTarget() {
+                            const player = get.player();
+                            const targets = game.filterPlayer(current => current != player && current.hasSkill("potfuji") && current.countCards("he"));
+                            return targets.length > 1 ? 1 : -1;
+                        },
+                        async content(event, trigger, player) {
+                            const target = event.target;
+                            const { bool, cards } = await target
+                                .chooseToGive(player, `符济：是否交给${get.translation(player)}一张牌？`, `若你以此法：交给其至少两张牌，你摸一张牌；交给其的牌包含${get.translation(type)}${isbasic ? "" : "牌"}，你获得一张不为此牌名或类型的牌`, 1)
+                                .set("ai", card => {
+                                    const { player, target, goon } = get.event();
+                                    if (!goon) {
+                                        return -get.value(card);
+                                    }
+                                    let add = 0;
+                                    if (player.hasUseTarget(card)) add += 3;
+                                    if (lib.card[card].ai?.tag?.damage) add += 3;
+                                    return get.value(card, target) - get.value(card, player) + add;
+                                })
+                                .set("goon", get.attitude(target, player) > 0)
+                                .forResult();
+                        },
+                        ai: {
+                            order: 6,
+                            threaten: 3,
+                            result: {
+                                player(player) {
+                                    return 1;
+                                },
+                                target: function (player, target) {
+                                    if (get.attitude(target, target) <= 0) return 0;
+                                    return get.attitude(player, target);
+                                }
+                            },
+                        },
+                    }
+                }
+            },
+            PSdaozhuan: {}
+        },
+        sort: sort.PScharacter_qun,
+        translate: {
+            PSpot_yuji: "PS势于吉",
+            PSpot_yuji_prefix: "PS势",
+            PSfuji: "符济",
+            PSfuji_info: "其他角色的出牌阶段限一次，其可以令你交给其一张牌（可以拒绝），称为“符济”。其使用“符济”牌时，此牌的牌面数值+1；然后此牌结算完毕后，你与其各摸一张牌，若此牌造成了伤害或回复了体力，你改为摸两张牌。",
+            PSdaozhuan: "道转",
+            PSdaozhuan_info: "你可以将区域内的一张牌当做任意基本牌使用。当你以此法使用牌后，若此牌对应的实体牌牌面信息包含：【杀】，你弃置当前回合角色的一张牌;【闪】，你摸一张牌；均不包含，此技能本回合失效。"
+        },
+        rank: rank.epic,
+    },
 }
