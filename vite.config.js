@@ -2,11 +2,11 @@ import { defineConfig } from "vite";
 import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
-export default defineConfig(({ command, mode }) => {
-  // let isDev = command === "serve" || mode === "development"; // 判断是否为开发模式
-  // isDev = true; // 强制开发模式，方便调试
+const PRIVATE_PROPERTY_REGEX = /^_[a-zA-Z]/;
 
-  const isDev = false;
+export default defineConfig(({ command, mode }) => {
+  const isDev = command === "serve" || mode === "development"; // 判断是否为开发模式
+
   return {
     plugins: [
       viteStaticCopy({
@@ -61,7 +61,7 @@ export default defineConfig(({ command, mode }) => {
       },
       mangle: {
         properties: {
-          regex: /^_[a-zA-Z]/, // 混淆私有属性（以 _ 开头）
+          regex: PRIVATE_PROPERTY_REGEX, // 混淆私有属性（以 _ 开头）
         },
       },
     },
