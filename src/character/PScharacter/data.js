@@ -2797,14 +2797,14 @@ export const data = {
                             let allPack = [];
                             for (let a in lib.characterPack) {
                                 //lib.characterPack  所有武将包
-                                if (lib.characterPack.hasOwnProperty(a)) allPack.push(a);
+                                if (Object.prototype.hasOwnProperty.call(lib.characterPack, a)) allPack.push(a);
                             }
                             return allPack;
                         }
                         else {
                             let allList = [];
                             for (let b in lib.character) {
-                                if (lib.character.hasOwnProperty(b)) allList.push(b);
+                                if (Object.prototype.hasOwnProperty.call(lib.character, b)) allList.push(b);
                             }
                             return allList;
                         }
@@ -2813,7 +2813,7 @@ export const data = {
                         let listx = [];
                         for (let i of uname) {
                             for (let j in lib.characterPack) {
-                                if (lib.characterPack.hasOwnProperty(j)) {
+                                if (Object.prototype.hasOwnProperty.call(lib.characterPack, j)) {
                                     if (removeHTML(lib.translate[`${j}_character_config`]) === i || lib.translate[`${j}_character_config`].includes('extension/') && lib.translate[`${j}_character_config`].includes(i)) {
                                         //lib.translate[`${j}_character_config`] 武将包翻译名
                                         listx.push(j);
@@ -2835,7 +2835,7 @@ export const data = {
                     pack.removeArray(shed);// 去除被移除的武将包数组
                     for (let k of pack) {//提取武将包的武将id，放入list数组
                         for (let l in lib.characterPack[k]) {
-                            if (lib.characterPack[k].hasOwnProperty(l)) list.push(l);
+                            if (Object.prototype.hasOwnProperty.call(lib.characterPack[k], l)) list.push(l);
                         }
                     }
                     list.addArray(lib.config.extension_PS武将_PSaddCharacter);
@@ -3011,22 +3011,22 @@ export const data = {
                     if (player.isUnderControl()) {
                         game.swapPlayerAuto(player);
                     }
-                    if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
-                        for (var i = 0; i < list.length; i++) {
-                            skills[i] = (lib.character[list[i]][3] || []);
-                        }
-                        if (!list.length || !skills.length) { event.finish(); return; }
-                        var next = game.createEvent('chooseToFuHan');
-                        next.player = player;
-                        next.list1 = list;
-                        next.list2 = skills;
-                        next.topic = '扶世';
-                        next.total = 3;
-                        next.setContent(lib.skill.PSfushi.chooseToFuHan);
-                        if (player.isMinHp()) player.recover();
-                        event.finish();
-                        return;
-                    }
+                    // if (/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
+                    //     for (var i = 0; i < list.length; i++) {
+                    //         skills[i] = (lib.character[list[i]][3] || []);
+                    //     }
+                    //     if (!list.length || !skills.length) { event.finish(); return; }
+                    //     var next = game.createEvent('chooseToFuHan');
+                    //     next.player = player;
+                    //     next.list1 = list;
+                    //     next.list2 = skills;
+                    //     next.topic = '扶世';
+                    //     next.total = 3;
+                    //     next.setContent(lib.skill.PSfushi.chooseToFuHan);
+                    //     if (player.isMinHp()) player.recover();
+                    //     event.finish();
+                    //     return;
+                    // }
                     for (var i of list) {
                         skills.addArray(lib.character[i][3] || []);
                     }
@@ -4594,7 +4594,6 @@ export const data = {
                         switch (button.link) {
                             case 0:
                                 return 2;
-                                break;
                             case 1:
                                 return Math.max(0.5, player.countCards('hs', function (card) {
                                     return get.name(card) == 'sha' && player.hasValueTarget(card);
@@ -4603,10 +4602,8 @@ export const data = {
                                 }).map(function (target) {
                                     return get.damageEffect(target, player, player);
                                 }));
-                                break;
                             case 2:
                                 return player.needsToDiscard() / 4;
-                                break;
                             case 3:
                                 var num = 0;
                                 return 0.8 * Math.max.apply(Math, game.filterPlayer(function (current) {
@@ -4614,8 +4611,6 @@ export const data = {
                                 }).map(function (target) {
                                     return get.effect(target, { name: 'shunshou_copy' }, player, player);
                                 }));
-                                break;
-
                         }
                     });
                     if (game.roundNumber > 1) next.set('selectButton', [1, game.roundNumber]);
@@ -4776,7 +4771,6 @@ export const data = {
                                 switch (button.link) {
                                     case 0:
                                         return 2;
-                                        break;
                                     case 1:
                                         return Math.max(0.5, player.countCards('hs', function (card) {
                                             return get.name(card) == 'sha' && player.hasValueTarget(card);
@@ -4785,10 +4779,8 @@ export const data = {
                                         }).map(function (target) {
                                             return get.damageEffect(target, player, player);
                                         }));
-                                        break;
                                     case 2:
                                         return player.needsToDiscard() / 4;
-                                        break;
                                     case 3:
                                         var num = 0;
                                         return 0.8 * Math.max.apply(Math, game.filterPlayer(function (current) {
@@ -4796,8 +4788,6 @@ export const data = {
                                         }).map(function (target) {
                                             return get.effect(target, { name: 'shunshou_copy' }, player, player);
                                         }));
-                                        break;
-
                                 }
                             });
                             'step 1'
@@ -6339,12 +6329,10 @@ export const data = {
                                 if (get.suit(event.cards2[i], event.player) == 'club' && get.position(event.cards2[i], true) == 'd' && event.player != player) return true;
                             }
                             return false;
-                            break;
                         case 'cardsDiscard':
                             var evt = event.getParent().relatedEvent;
                             if (get.position(event.cards[0], true) != 'd' || evt.player == player) return false;
                             return (get.suit(event.cards[0]) == 'club');
-                            break;
                     }
                 },
                 forced: true,
@@ -9787,21 +9775,21 @@ export const data = {
                     if (player.isUnderControl()) {
                         game.swapPlayerAuto(player);
                     }
-                    if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
-                        for (var i = 0; i < list.length; i++) {
-                            skills[i] = (lib.character[list[i]][3] || []);
-                        }
-                        if (!list.length || !skills.length) { event.finish(); return; }
-                        var next = game.createEvent('chooseToFuHan');
-                        next.player = player;
-                        next.list1 = list;
-                        next.list2 = skills;
-                        next.topic = '摧城';
-                        next.total = 3;
-                        next.setContent(lib.skill.PSfushi.chooseToFuHan);
-                        event.finish();
-                        return;
-                    }
+                    // if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
+                    //     for (var i = 0; i < list.length; i++) {
+                    //         skills[i] = (lib.character[list[i]][3] || []);
+                    //     }
+                    //     if (!list.length || !skills.length) { event.finish(); return; }
+                    //     var next = game.createEvent('chooseToFuHan');
+                    //     next.player = player;
+                    //     next.list1 = list;
+                    //     next.list2 = skills;
+                    //     next.topic = '摧城';
+                    //     next.total = 3;
+                    //     next.setContent(lib.skill.PSfushi.chooseToFuHan);
+                    //     event.finish();
+                    //     return;
+                    // }
                     for (var i of list) {
                         skills.addArray(lib.character[i][3] || []);
                     }
@@ -11924,26 +11912,26 @@ export const data = {
                             if (player.isUnderControl()) {
                                 game.swapPlayerAuto(player);
                             }
-                            if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
-                                var skillx = skills.slice(0);
-                                skills = [];
-                                for (var i = 0; i < list.length; i++) {
-                                    skills[i] = (lib.character[list[i]][3] || []).filter(function (skill) {
-                                        return skillx.includes(skill);
-                                    });
-                                }
-                                if (!list.length || !skills.length) { event.finish(); return; }
-                                var next = game.createEvent('chooseToPingJian');
-                                next.player = player;
-                                next.list1 = list;
-                                next.list2 = skills;
-                                next.topic = '评荐';
-                                next.total = 2;
-                                next.triggername = event.triggername == 'damageEnd' ? 'damageAfter' : 'phaseJieshu';
-                                next.setContent(lib.skill.PSsb_pingjian.chooseToPingJian);
-                                event.finish();
-                                return;
-                            }
+                            // if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
+                            //     var skillx = skills.slice(0);
+                            //     skills = [];
+                            //     for (var i = 0; i < list.length; i++) {
+                            //         skills[i] = (lib.character[list[i]][3] || []).filter(function (skill) {
+                            //             return skillx.includes(skill);
+                            //         });
+                            //     }
+                            //     if (!list.length || !skills.length) { event.finish(); return; }
+                            //     var next = game.createEvent('chooseToPingJian');
+                            //     next.player = player;
+                            //     next.list1 = list;
+                            //     next.list2 = skills;
+                            //     next.topic = '评荐';
+                            //     next.total = 2;
+                            //     next.triggername = event.triggername == 'damageEnd' ? 'damageAfter' : 'phaseJieshu';
+                            //     next.setContent(lib.skill.PSsb_pingjian.chooseToPingJian);
+                            //     event.finish();
+                            //     return;
+                            // }
                             var switchToAuto = function () {
                                 _status.imchoosing = false;
                                 event._result = {
@@ -12121,26 +12109,26 @@ export const data = {
                                     if (player.isUnderControl()) {
                                         game.swapPlayerAuto(player);
                                     }
-                                    if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
-                                        var skillx = skills.slice(0);
-                                        skills = [];
-                                        for (var i = 0; i < list.length; i++) {
-                                            skills[i] = (lib.character[list[i]][3] || []).filter(function (skill) {
-                                                return skillx.includes(skill);
-                                            });
-                                        }
-                                        if (!list.length || !skills.length) { event.finish(); return; }
-                                        var next = game.createEvent('chooseToPingJian');
-                                        next.player = player;
-                                        next.list1 = list;
-                                        next.list2 = skills;
-                                        next.topic = '评荐';
-                                        next.total = 2;
-                                        next.triggername = 'phaseUse';
-                                        next.setContent(lib.skill.PSsb_pingjian.chooseToPingJian);
-                                        event.finish();
-                                        return;
-                                    }//skills.unshift('摸一张牌');
+                                    // if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
+                                    //     var skillx = skills.slice(0);
+                                    //     skills = [];
+                                    //     for (var i = 0; i < list.length; i++) {
+                                    //         skills[i] = (lib.character[list[i]][3] || []).filter(function (skill) {
+                                    //             return skillx.includes(skill);
+                                    //         });
+                                    //     }
+                                    //     if (!list.length || !skills.length) { event.finish(); return; }
+                                    //     var next = game.createEvent('chooseToPingJian');
+                                    //     next.player = player;
+                                    //     next.list1 = list;
+                                    //     next.list2 = skills;
+                                    //     next.topic = '评荐';
+                                    //     next.total = 2;
+                                    //     next.triggername = 'phaseUse';
+                                    //     next.setContent(lib.skill.PSsb_pingjian.chooseToPingJian);
+                                    //     event.finish();
+                                    //     return;
+                                    // }//skills.unshift('摸一张牌');
                                     var switchToAuto = function () {
                                         _status.imchoosing = false;
                                         event._result = {
@@ -12868,26 +12856,26 @@ export const data = {
                             if (player.isUnderControl()) {
                                 game.swapPlayerAuto(player);
                             }
-                            if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
-                                skills = [];
-                                for (var i = 0; i < list.length; i++) {
-                                    skills[i] = (lib.character[list[i]][3] || []).filter(function (skill) {
-                                        if (player.hasSkill(skill)) return false;
-                                        return true;
-                                    });
-                                }
-                                if (!list.length || !skills.length) { event.finish(); return; }
-                                var next = game.createEvent('chooseToFuHan');
-                                next.player = player;
-                                next.list1 = list;
-                                next.list2 = skills;
-                                next.topic = '夺锐';
-                                next.total = 1;
-                                next.setContent(lib.skill.PSfushi.chooseToFuHan);
-                                player.logSkill('PSduorui');
-                                event.finish();
-                                return;
-                            }
+                            // if (false/* lib.config.extensions && lib.config.extensions.includes('天牢令') && lib.config['extension_天牢令_enable'] && game.TLHasExt */) {
+                            //     skills = [];
+                            //     for (var i = 0; i < list.length; i++) {
+                            //         skills[i] = (lib.character[list[i]][3] || []).filter(function (skill) {
+                            //             if (player.hasSkill(skill)) return false;
+                            //             return true;
+                            //         });
+                            //     }
+                            //     if (!list.length || !skills.length) { event.finish(); return; }
+                            //     var next = game.createEvent('chooseToFuHan');
+                            //     next.player = player;
+                            //     next.list1 = list;
+                            //     next.list2 = skills;
+                            //     next.topic = '夺锐';
+                            //     next.total = 1;
+                            //     next.setContent(lib.skill.PSfushi.chooseToFuHan);
+                            //     player.logSkill('PSduorui');
+                            //     event.finish();
+                            //     return;
+                            // }
                             var switchToAuto = function () {
                                 _status.imchoosing = false;
                                 event._result = {
@@ -15147,7 +15135,7 @@ export const data = {
                     if (name == "gainAfter") return false;
                     return event.card.name === 'jiu' && player.hasSkill('PSshixian');
                 },
-                prompt2: function (event, player) {
+                prompt2: function () {
                     return `令你使用的下一张牌无视条件触发技能〖诗仙〗？`
                 },
                 content: function () {
@@ -18849,7 +18837,8 @@ export const data = {
                         list = [];
                         for (var i = 0; i < _status.characterlist.length; i++) {
                             var name = _status.characterlist[i];
-                            if (true/* lib.character[name][1] == 'shu' */) list.push(name);
+                            // if (lib.character[name][1] == 'shu' ) list.push(name);
+                            list.push(name);
                         }
                     }
                     else if (_status.connectMode) {
@@ -20390,7 +20379,7 @@ export const data = {
                             .forResult());
                     }
                     switch (control) {
-                        case '选项一':
+                        case '选项一': {
                             player.storage.PSshen_huashen.invalid = true;
                             const name = player.name ? player.name : player.name1;
                             if (name) {
@@ -20413,6 +20402,7 @@ export const data = {
                             delete player.storage.PSshen_huashen.current;
                             delete player.storage.PSshen_huashen.current2;
                             break;
+                        }
                         case '选项二':
                             player.storage.PSshen_huashen.damage = true;
                             break;
@@ -22329,7 +22319,6 @@ export const data = {
                 }
             },
             PSaoshuang: {
-                audio: 2,
                 trigger: {
                     global: ["loseAfter", "loseAsyncAfter"],
                 },

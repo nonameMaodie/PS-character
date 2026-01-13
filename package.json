@@ -4,9 +4,9 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
 		"build": "vite build",
-		"preview": "vite preview"
+		"build:dev": "vite build --mode development",
+		"lint": "eslint . --fix"
 	},
 	"devDependencies": {
 		"cspell": "^9.6.0",
