@@ -1,12 +1,13 @@
 # PS武将
 
 ## 介绍
+
 无名杀PS武将扩展仓库
 
 ## 开源地址
+
 - github仓库地址：https://github.com/nineMangos/PS-character
 - gitee仓库地址：https://gitee.com/ninemangos/PS-character
-
 
 ## 使用说明
 
@@ -20,7 +21,6 @@
 2.  [点击此处可以下载无名杀完整包](https://github.com/libccy/noname/releases "无名杀仓库地址")
 3.  [点击此处试玩无名杀](https://spmario233.github.io/noname/index.html) （图片素材加载速度较慢，不推荐）
 
-
 ## 参与贡献
 
 1.  Fork 本仓库
@@ -31,4 +31,3 @@
 
 - [棘手懒人包仓库](https://github.com/lieren2023/noname-for-dummies)
 - [魔改十周年UI仓库](https://github.com/mengxinzxz/decadeUI--mx)
-

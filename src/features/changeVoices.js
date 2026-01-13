@@ -7,7 +7,7 @@ import { onContent } from "../utils/hooks.js";
  * @param { HTMLDivElement[] | HTMLDivElement } playersName
  * @param { boolean | string | Array | number } audioName
  */
-function changeSkillAudio(skillsName, playersName, audioName) {
+export function changeSkillAudio(skillsName, playersName, audioName) {
   if (typeof skillsName === "string") {
     skillsName = [skillsName];
   }
