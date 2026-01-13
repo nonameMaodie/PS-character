@@ -1,82 +1,218 @@
 {
-	"2.4.0": {
-		"changeLog": ["/setPlayer/", "将露头的武将图全部替换为非露头的", "优化文件结构", "修复PS左慈无法更换技能的bug", "修复PS神左慈〖汲魂〗潜在的bug"],
-		"players": [],
-		"cards": []
-	},
-	"2.3.0": {
-		"changeLog": ["/setPlayer/", "新增了武将：PS谋张飞、PS寒冰剑少女"],
-		"players": ["PSsb_zhangfei", "PShanbingjiangirl"],
-		"cards": []
-	},
-	"2.2.0": {
-		"changeLog": ["/setPlayer/", "由于1.10.13本体有bug，所以请搭配1.10.12本体或1.10.14之后的本体使用", "此版本起正式完结，后续不会再更新武将", "新增了武将：华容曹操、PS审配", "重做了武将：PS神邓艾", "修复了已知的bug"],
-		"players": ["PShr_caocao", "PSshenpei", "PSshen_dengai"],
-		"cards": []
-	},
-	"2.1.9": {
-		"changeLog": ["/setPlayer/", "新增了武将：PS神南华老仙、狐狸（特殊武将）", "调整了PS郝昭的〖镇骨〗和PS陆绩的〖整论〗", "修复了PS神左慈无限复活的bug", "修复了PS钟琰描述与实际效果不符的bug", "修复了PS神马超发动〖铁骑〗会报错的bug", "修复了其他已知的bug"],
-		"players": ["PSshen_nanhualaoxian", "PSsp_huli", "PShaozhao", "PSluji"],
-		"cards": []
-	},
-	"2.1.8": {
-		"changeLog": ["/setPlayer/", "适配了本体1.10.2版本", "新增了武将：PS文鸯、PS钟琰", "将所有存放武将信息的数组对象化，并给部分的武将添加了宗族标签", "为扩展自带的语音逐一添加了台词信息", "对PScharacter.js和PSsp_character.js进行了拆分", "修复了已知的bug"],
-		"players": ["PSwenyang", "PSzhongyan"],
-		"cards": []
-	},
-	"2.1.7.3": {
-		"changeLog": ["适配了本体1.10.11.1版本，且最低兼容支持本体1.10.8版本", "新增了info.json文件，以便在关闭本扩展后仍能了解到一些信息", "PS赵襄增加觉醒换皮肤和语音效果", "修复PS生熏鱼和其他武将的一些bug"],
-		"players": [],
-		"cards": []
-	},
-	"2.1.7": {
-		"changeLog": ["/setPlayer/", "收录了九个陈皮、九个鲨雕、希霞、九个夜白、九个芒果等DIYer设计的武将", "新增武将：PS麴义、PS马超、PS群马超、PS陆绩、PS陆逊、PS神左慈、PS吕布、PS袁术", "削弱武将：PS许褚", "修复了双倍收益哥0体力上限复活的bug"],
-		"players": ["PSquyi", "PSmachao", "PSqun_machao", "PSluji", "PSluxun", "PSshen_zuoci", "PSlvbu", "PSreyuanshu"],
-		"cards": []
-	},
-	"2.1.6": {
-		"changeLog": ["/setPlayer/", "收录了九个陈皮、九个鲨雕、mento last、神鬼高达、九个芒果等DIYer设计的武将", "适配本体1.10.8版本，但不兼容更低版本", "新增了武将：PS许褚、PS公孙瓒、PS董卓、PS黄忠、PS神司马懿、PS乐蔡文姬、PS曹丕、PS曹婴、PS经典黄盖、PS廖化", "重做了武将：PS典韦、PS黄月英、PS张飞", "调整了PS左慈的〖化身〗和PS赵襄的〖扶汉〗", "PS左慈的〖化身〗在发动时增加了“获得技能提示”", "PS赵襄等武将的技能不再与“天牢令”扩展绑定", "移除了“AI禁将”功能，使之独立为一个扩展包", "优化了“启动页美化”功能的底层代码", "优化了大部分PS武将的技能语音"],
-		"players": ["PSxuzhu", "PSgongsunzan", "PSdongzhuo", "PShuangzhong", "PSshen_simayi", "PSyue_caiwenji", "PScaopi", "PScaoying", "PSdian_huanggai", "PSliaohua", "PSdianwei", "PShuangyueying", "PSzhangfei"],
-		"cards": []
-	},
-	"2.1.5": {
-		"changeLog": ["/setPlayer/", "新增了武将：PS李丰、PS陈式、PS群赵云、PS笨孙笨", "同甘共苦哥技能调整（其他角色摸牌后 → 于摸牌阶段外获得牌后）", "PS左慈〖化身〗代码重写（以“界左慈”〖化身〗的代码为模板，不再依赖chooseButtonControl函数），并且调整了部分技能（出牌阶段，你可以改变性别和势力 → 出牌阶段限一次，你可以将性别和势力改为与一张“化身牌”相同）", "“AI禁将”功能新增“滚动条”和“小型布局”", "修复了PS神荀彧发动〖天佐〗可能会平局的问题", "修复了“编辑将池”功能不适配本体1.10.6以上版本的bug", "修复了“AI禁将”功能的页面布局会被美化类扩展影响的bug", "修复其他bug若干"],
-		"players": ["PSlifeng", "PSchenshi", "PSqun_zhaoyun", "PSben_sunben"],
-		"cards": []
-	},
-	"2.1.4": {
-		"changeLog": ["/setPlayer/", "基本上兼容了本体1.10.6版本（可能有一些bug没有排查到位）", "新增了武将：PS陆逊、PS徐荣"],
-		"players": ["PSluxun", "PSxurong"],
-		"cards": []
-	},
-	"2.1.3": {
-		"changeLog": ["/setPlayer/", "新增了武将：PS曹仁、PS张飞", "新增了功能“启动页美化”", "新增了功能“AI禁将”", "修复了PS神诸葛亮标记失效的bug"],
-		"players": ["PScaoren", "PSzhangfei"],
-		"cards": []
-	},
-	"2.1.2": {
-		"changeLog": ["/setPlayer/", "新增了武将：PS刘备、九个陈皮", "修复了PS神鬼无前在ai操作下会报错的bug", "修复了关闭本扩展会报错的bug"],
-		"players": ["PSliubei", "PSsp_jiugechenpi"],
-		"cards": []
-	},
-	"2.1.1": {
-		"changeLog": ["/setPlayer/", "/setCard/", "新增了武将：九个芒果、PS潘璋马忠、PS凌操", "修复了已知的bug", "增加了更多的bug"],
-		"players": ["PSsp_jiugemangguo", "PSpanzhangmazhong", "PSlingcao"],
-		"cards": ["PSsp_blank"]
-	},
-	"2.1.0": {
-		"changeLog": ["/setPlayer/", "适配了本体1.10.4版本", "新增了武将：PS诸葛亮、PS孟获", "九个鲨雕新增技能〖九转〗", "PS南华老仙和夜白的部分技能代码采用新版本写法", "PS陆抗〖决偃〗获得的技能改为〖PS·集智〗", "修复了部分武将在选将阶段不能切换为同名武将的bug"],
-		"players": ["PSzhugeliang", "PSmenghuo", "PSsp_jiugeshadiao"],
-		"cards": []
-	},
-	"2.0.9": {
-		"changeLog": ["/setPlayer/", "适配了本体1.10.3版本", "适配本体武将名称前缀高亮显示，并且增加了武将前缀样式切换功能", "新增/重做了武将：PS李白、PS孙尚香、PS蜀孙尚香、九个鲨雕、夜白", "削弱了武将：仙界曹植", "新增了功能：平仄提示", "添加了十首三国杀局内bgm", "修复了已知的bug"],
-		"players": ["PSlibai", "PSsunshangxiang", "PSshu_sunshangxiang", "PSsp_jiugeshadiao", "PSsp_yebai"],
-		"cards": []
-	},
-	"2.0.8": {
-		"changeLog": ["适配了本体1.10.2版本", "新增了武将：PS神典韦、PS钟会、PS李白、屑孙权", "PS左慈增强，现在可以化身觉醒技、限定技了…", "移除了扩展内置的皮肤包，缩减扩展包体积", "为扩展里所有的武将添加了新版本的阵亡语音播放代码。（野兽先辈没有）", "修复了已知的bug"],
-		"players": [],
-		"cards": []
-	}
+  "2.4.0": {
+    "changeLog": [
+      "/setPlayer/",
+      "将露头的武将图全部替换为非露头的",
+      "优化文件结构",
+      "修复PS左慈无法更换技能的bug",
+      "修复PS神左慈〖汲魂〗潜在的bug"
+    ],
+    "players": [],
+    "cards": []
+  },
+  "2.3.0": {
+    "changeLog": ["/setPlayer/", "新增了武将：PS谋张飞、PS寒冰剑少女"],
+    "players": ["PSsb_zhangfei", "PShanbingjiangirl"],
+    "cards": []
+  },
+  "2.2.0": {
+    "changeLog": [
+      "/setPlayer/",
+      "由于1.10.13本体有bug，所以请搭配1.10.12本体或1.10.14之后的本体使用",
+      "此版本起正式完结，后续不会再更新武将",
+      "新增了武将：华容曹操、PS审配",
+      "重做了武将：PS神邓艾",
+      "修复了已知的bug"
+    ],
+    "players": ["PShr_caocao", "PSshenpei", "PSshen_dengai"],
+    "cards": []
+  },
+  "2.1.9": {
+    "changeLog": [
+      "/setPlayer/",
+      "新增了武将：PS神南华老仙、狐狸（特殊武将）",
+      "调整了PS郝昭的〖镇骨〗和PS陆绩的〖整论〗",
+      "修复了PS神左慈无限复活的bug",
+      "修复了PS钟琰描述与实际效果不符的bug",
+      "修复了PS神马超发动〖铁骑〗会报错的bug",
+      "修复了其他已知的bug"
+    ],
+    "players": ["PSshen_nanhualaoxian", "PSsp_huli", "PShaozhao", "PSluji"],
+    "cards": []
+  },
+  "2.1.8": {
+    "changeLog": [
+      "/setPlayer/",
+      "适配了本体1.10.2版本",
+      "新增了武将：PS文鸯、PS钟琰",
+      "将所有存放武将信息的数组对象化，并给部分的武将添加了宗族标签",
+      "为扩展自带的语音逐一添加了台词信息",
+      "对PScharacter.js和PSsp_character.js进行了拆分",
+      "修复了已知的bug"
+    ],
+    "players": ["PSwenyang", "PSzhongyan"],
+    "cards": []
+  },
+  "2.1.7.3": {
+    "changeLog": [
+      "适配了本体1.10.11.1版本，且最低兼容支持本体1.10.8版本",
+      "新增了info.json文件，以便在关闭本扩展后仍能了解到一些信息",
+      "PS赵襄增加觉醒换皮肤和语音效果",
+      "修复PS生熏鱼和其他武将的一些bug"
+    ],
+    "players": [],
+    "cards": []
+  },
+  "2.1.7": {
+    "changeLog": [
+      "/setPlayer/",
+      "收录了九个陈皮、九个鲨雕、希霞、九个夜白、九个芒果等DIYer设计的武将",
+      "新增武将：PS麴义、PS马超、PS群马超、PS陆绩、PS陆逊、PS神左慈、PS吕布、PS袁术",
+      "削弱武将：PS许褚",
+      "修复了双倍收益哥0体力上限复活的bug"
+    ],
+    "players": [
+      "PSquyi",
+      "PSmachao",
+      "PSqun_machao",
+      "PSluji",
+      "PSluxun",
+      "PSshen_zuoci",
+      "PSlvbu",
+      "PSreyuanshu"
+    ],
+    "cards": []
+  },
+  "2.1.6": {
+    "changeLog": [
+      "/setPlayer/",
+      "收录了九个陈皮、九个鲨雕、mento last、神鬼高达、九个芒果等DIYer设计的武将",
+      "适配本体1.10.8版本，但不兼容更低版本",
+      "新增了武将：PS许褚、PS公孙瓒、PS董卓、PS黄忠、PS神司马懿、PS乐蔡文姬、PS曹丕、PS曹婴、PS经典黄盖、PS廖化",
+      "重做了武将：PS典韦、PS黄月英、PS张飞",
+      "调整了PS左慈的〖化身〗和PS赵襄的〖扶汉〗",
+      "PS左慈的〖化身〗在发动时增加了“获得技能提示”",
+      "PS赵襄等武将的技能不再与“天牢令”扩展绑定",
+      "移除了“AI禁将”功能，使之独立为一个扩展包",
+      "优化了“启动页美化”功能的底层代码",
+      "优化了大部分PS武将的技能语音"
+    ],
+    "players": [
+      "PSxuzhu",
+      "PSgongsunzan",
+      "PSdongzhuo",
+      "PShuangzhong",
+      "PSshen_simayi",
+      "PSyue_caiwenji",
+      "PScaopi",
+      "PScaoying",
+      "PSdian_huanggai",
+      "PSliaohua",
+      "PSdianwei",
+      "PShuangyueying",
+      "PSzhangfei"
+    ],
+    "cards": []
+  },
+  "2.1.5": {
+    "changeLog": [
+      "/setPlayer/",
+      "新增了武将：PS李丰、PS陈式、PS群赵云、PS笨孙笨",
+      "同甘共苦哥技能调整（其他角色摸牌后 → 于摸牌阶段外获得牌后）",
+      "PS左慈〖化身〗代码重写（以“界左慈”〖化身〗的代码为模板，不再依赖chooseButtonControl函数），并且调整了部分技能（出牌阶段，你可以改变性别和势力 → 出牌阶段限一次，你可以将性别和势力改为与一张“化身牌”相同）",
+      "“AI禁将”功能新增“滚动条”和“小型布局”",
+      "修复了PS神荀彧发动〖天佐〗可能会平局的问题",
+      "修复了“编辑将池”功能不适配本体1.10.6以上版本的bug",
+      "修复了“AI禁将”功能的页面布局会被美化类扩展影响的bug",
+      "修复其他bug若干"
+    ],
+    "players": ["PSlifeng", "PSchenshi", "PSqun_zhaoyun", "PSben_sunben"],
+    "cards": []
+  },
+  "2.1.4": {
+    "changeLog": [
+      "/setPlayer/",
+      "基本上兼容了本体1.10.6版本（可能有一些bug没有排查到位）",
+      "新增了武将：PS陆逊、PS徐荣"
+    ],
+    "players": ["PSluxun", "PSxurong"],
+    "cards": []
+  },
+  "2.1.3": {
+    "changeLog": [
+      "/setPlayer/",
+      "新增了武将：PS曹仁、PS张飞",
+      "新增了功能“启动页美化”",
+      "新增了功能“AI禁将”",
+      "修复了PS神诸葛亮标记失效的bug"
+    ],
+    "players": ["PScaoren", "PSzhangfei"],
+    "cards": []
+  },
+  "2.1.2": {
+    "changeLog": [
+      "/setPlayer/",
+      "新增了武将：PS刘备、九个陈皮",
+      "修复了PS神鬼无前在ai操作下会报错的bug",
+      "修复了关闭本扩展会报错的bug"
+    ],
+    "players": ["PSliubei", "PSsp_jiugechenpi"],
+    "cards": []
+  },
+  "2.1.1": {
+    "changeLog": [
+      "/setPlayer/",
+      "/setCard/",
+      "新增了武将：九个芒果、PS潘璋马忠、PS凌操",
+      "修复了已知的bug",
+      "增加了更多的bug"
+    ],
+    "players": ["PSsp_jiugemangguo", "PSpanzhangmazhong", "PSlingcao"],
+    "cards": ["PSsp_blank"]
+  },
+  "2.1.0": {
+    "changeLog": [
+      "/setPlayer/",
+      "适配了本体1.10.4版本",
+      "新增了武将：PS诸葛亮、PS孟获",
+      "九个鲨雕新增技能〖九转〗",
+      "PS南华老仙和夜白的部分技能代码采用新版本写法",
+      "PS陆抗〖决偃〗获得的技能改为〖PS·集智〗",
+      "修复了部分武将在选将阶段不能切换为同名武将的bug"
+    ],
+    "players": ["PSzhugeliang", "PSmenghuo", "PSsp_jiugeshadiao"],
+    "cards": []
+  },
+  "2.0.9": {
+    "changeLog": [
+      "/setPlayer/",
+      "适配了本体1.10.3版本",
+      "适配本体武将名称前缀高亮显示，并且增加了武将前缀样式切换功能",
+      "新增/重做了武将：PS李白、PS孙尚香、PS蜀孙尚香、九个鲨雕、夜白",
+      "削弱了武将：仙界曹植",
+      "新增了功能：平仄提示",
+      "添加了十首三国杀局内bgm",
+      "修复了已知的bug"
+    ],
+    "players": [
+      "PSlibai",
+      "PSsunshangxiang",
+      "PSshu_sunshangxiang",
+      "PSsp_jiugeshadiao",
+      "PSsp_yebai"
+    ],
+    "cards": []
+  },
+  "2.0.8": {
+    "changeLog": [
+      "适配了本体1.10.2版本",
+      "新增了武将：PS神典韦、PS钟会、PS李白、屑孙权",
+      "PS左慈增强，现在可以化身觉醒技、限定技了…",
+      "移除了扩展内置的皮肤包，缩减扩展包体积",
+      "为扩展里所有的武将添加了新版本的阵亡语音播放代码。（野兽先辈没有）",
+      "修复了已知的bug"
+    ],
+    "players": [],
+    "cards": []
+  }
 }

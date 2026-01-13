@@ -16,7 +16,7 @@
   width: 248px;
   margin: 0 auto;
   grid-template-rows: 0fr;
-  transition: grid-template-rows .8s ease-in-out;
+  transition: grid-template-rows 0.8s ease-in-out;
 }
 
 .PSjiaqun .PSjiaqun-content {
