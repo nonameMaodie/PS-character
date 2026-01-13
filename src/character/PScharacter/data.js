@@ -27201,9 +27201,9 @@ export const data = {
         },
         check(event, player) {
           if (!player.hasSkill("PStianxiang")) {
-            if (get.hp(player) <= 2) return false;
+            if (player.hp <= 2) return false;
           }
-          if (!player.countCards("h", c => get.suit(c, player) === "heart") && get.hp(player) <= 2) return false;
+          if (!player.countCards("h", c => get.suit(c, player) === "heart") && player.hp <= 2) return false;
           return get.attitude(player, event.player) > 0;
         },
         logTarget: "player",
