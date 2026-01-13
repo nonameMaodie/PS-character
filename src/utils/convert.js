@@ -1,3 +1,12 @@
+/**
+ * 将数据转换为拆分重组为选项
+ * @param { {
+ * name: String
+ * translate: String
+ * }} pack 武将包，包含武将包id和武将包翻译
+ * @param { Object } data 数据
+ * @returns { Object }
+ */
 export function convertDataToOptions(pack, data) {
 	const options = {
 		character: {},
@@ -35,13 +44,24 @@ export function convertDataToOptions(pack, data) {
 		replace && (options.characterReplace[name] = replace);
 		title && (options.characterTitle[name] = title);
 		substitute && (options.characterSubstitute[name] = substitute);
-		options.rank[rank[0]] = options.rank[rank[0]] || [];
-		options.rank[rank[0]].push(name);
-		options.characterSort[pack.name][sort[0]] = options.characterSort[pack.name][sort[0]] || [];
-		options.characterSort[pack.name][sort[0]].push(name);
-		name.includes("PS") && (options.translate[name + "_prefix"] = name.includes("PSshen_") ? "PS神" : "PS");
-		options.translate[sort[0]] || (options.translate[sort[0]] = sort[1]);
-		options.translate[pack.name] = pack.translate;
+		// 将武将id加入对应评级分组
+		const currentRankGroup = options.rank;
+		const rankKey = rank[0];
+		currentRankGroup[rankKey] = currentRankGroup[rankKey] || [];
+		currentRankGroup[rankKey].push(name);
+		// 将武将id加入对应分类分组
+		const currentSortGroup = options.characterSort[pack.name];
+		const sortKey = sort[0];
+		const sortTranslate = sort[1];
+		currentSortGroup[sortKey] = currentSortGroup[sortKey] || [];
+		currentSortGroup[sortKey].push(name);
+		options.translate[sortKey] || (options.translate[sortKey] = sortTranslate); // 武将包分类翻译
+		// 批量生成武将前缀翻译
+		if (name.includes("PS")) {
+			const prefix = name.includes("PSshen_") ? "PS神" : "PS";
+			options.translate[name + "_prefix"] = prefix;
+		}
+		options.translate[pack.name] = pack.translate; // 武将包翻译
 		translate && (Object.assign(options.translate, translate));
 		dynamicTranslate && (Object.assign(options.dynamicTranslate, dynamicTranslate));
 		skills && (Object.assign(options.skill, skills));

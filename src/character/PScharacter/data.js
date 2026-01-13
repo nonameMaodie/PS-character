@@ -16380,11 +16380,11 @@ export const data = {
                 shaRelated: true,
                 filter: function (event, player, name) {
                     switch (name) {
-                        case shaMiss:
+                        case "shaMiss":
                             return true;
-                        case useCardToPlayered:
+                        case "useCardToPlayered":
                             return event.card && get.name(event.card) === "sha";
-                        case damageSource:
+                        case "damageSource":
                             return event.card && event.card.name == 'sha' && event.player != player && event.player.isIn() && event.player.isAlive();
                     }
                 },
@@ -16401,10 +16401,10 @@ export const data = {
                 },
                 content: function () {
                     switch (event.triggername) {
-                        case shaMiss:
+                        case "shaMiss":
                             player.getHistory('custom').push({ PSliyong_effect: true });
                             break;
-                        case useCardToPlayered:
+                        case "useCardToPlayered":
                             player.logSkill(event.name);
                             player.markSkill(event.name);
                             if (player.getHistory('useCard', evt => evt.card.name === "sha").length > 1) {
@@ -16422,7 +16422,7 @@ export const data = {
                                 trigger.getParent().directHit.addArray(game.players);
                             }
                             break;
-                        case damageSource:
+                        case "damageSource":
                             player.storage[event.name].add('铁骑！');
                             trigger.player.addTempSkill('fengyin');
                     }
@@ -22800,6 +22800,7 @@ export const data = {
             "PSsb_zuoci",
             "PSzuoci",
         ],
+        intro: "由“九个芒果”设计",
         sort: sort.PScharacter_qun,
         translate: {
             PSsb_zuoci: "PS谋左慈",
@@ -22824,30 +22825,39 @@ export const data = {
             PSfuji: {
                 audio: "potfuji",
                 global: "PSfuji_global",
+                refuseInfo: ["不给", "拒绝"],
                 subSkill: {
                     global: {
+                        audio: "PSfuji",
                         enable: "phaseUse",
                         filter(event, player) {
                             if (player.hasSkill("PSfuji_used")) {
                                 return false;
                             }
                             return game.filterPlayer(function (current) {
-                                return current != player && current.hasSkill("PSfuji") && player.countCards("he");
+                                return current != player && current.hasSkill("PSfuji") && current.countCards("he");
                             }).length > 0;
                         },
-                        prompt: "令一名角色交给你一张牌",
+                        prompt() {
+                            const player = get.player();
+                            const targets = game.filterPlayer(current => current != player && current.hasSkill("PSfuji") && current.countCards("he"));
+                            return "令" + get.translation(targets) + (targets.length > 1 ? "中的一人" : "") + "给你好处";
+                        },
                         filterTarget(card, player, target) {
-                            return target.hasSkill("potfuji");
+                            return target != player && target.hasSkill("PSfuji") && target.countCards("he");
                         },
                         selectTarget() {
                             const player = get.player();
-                            const targets = game.filterPlayer(current => current != player && current.hasSkill("potfuji") && current.countCards("he"));
+                            const targets = game.filterPlayer(current => current != player && current.hasSkill("PSfuji") && current.countCards("he"));
                             return targets.length > 1 ? 1 : -1;
                         },
                         async content(event, trigger, player) {
+                            player.addTempSkill("PSfuji_used");
                             const target = event.target;
+                            target.logSkill("PSfuji", player, 'thunder');
+
                             const { bool, cards } = await target
-                                .chooseToGive(player, `符济：是否交给${get.translation(player)}一张牌？`, `若你以此法：交给其至少两张牌，你摸一张牌；交给其的牌包含${get.translation(type)}${isbasic ? "" : "牌"}，你获得一张不为此牌名或类型的牌`, 1)
+                                .chooseToGive(player, `符济：是否交给${get.translation(player)}一张牌？`, `其使用你给予的牌后，你也可以获得好处`, 1)
                                 .set("ai", card => {
                                     const { player, target, goon } = get.event();
                                     if (!goon) {
@@ -22860,6 +22870,15 @@ export const data = {
                                 })
                                 .set("goon", get.attitude(target, player) > 0)
                                 .forResult();
+
+                            if (bool) {
+                                player.addSkill("PSfuji_effect");
+                                player.addGaintag(cards, "PSfuji");
+                                player.markAuto("PSfuji_effect", [[cards[0], target]]);
+                            } else {
+                                const refuseInfo = lib.skill.PSfuji.refuseInfo.slice();
+                                target.chat(refuseInfo.randomGet());
+                            }
                         },
                         ai: {
                             order: 6,
@@ -22874,19 +22893,202 @@ export const data = {
                                 }
                             },
                         },
-                    }
+                    },
+                    used: {
+                        charlotte: true,
+                        silent: true,
+                        sub: true,
+                    },
+                    effect: {
+                        trigger: {
+                            player: ["useCard"],
+                        },
+                        charlotte: true,
+                        silent: true,
+                        forced: true,
+                        onremove: true,
+                        filter(event, player) {
+                            if (event.cards.length !== 1) return false;
+                            if (!player.getStorage("PSfuji_effect").length) return false;
+                            const card = event.cards[0];
+                            return player.getStorage("PSfuji_effect")?.map(a => a?.[0])?.includes(card);
+                        },
+                        async content(event, trigger, player) {
+                            trigger.baseDamage++;
+                            player
+                                .when("useCardAfter")
+                                .filter(evt => evt === trigger)
+                                .then(() => {
+                                    const card = trigger.cards[0];
+                                    const item = player.getStorage("PSfuji_effect")?.find(a => a?.[0] === card);
+                                    const target = item[1];
+                                    player.unmarkAuto("PSfuji_effect", [item]);
+                                    const num = player.hasHistory("sourceDamage", evt => evt.card === trigger.card) ? 2 : 1;
+                                    game.asyncDraw([player, target], [1, num]);
+                                    if (!player.getStorage("PSfuji_effect").length) {
+                                        player.removeSkill("PSfuji_effect");
+                                    }
+                                });
+                        }
+                    },
                 }
             },
-            PSdaozhuan: {}
+            PSdaozhuan: {
+                audio: "potdaozhuan",
+                enable: "chooseToUse",
+                filter(event, player) {
+                    if (!player.countCards("hes") || player.hasSkill("PSdaozhuan_used")) {
+                        return false;
+                    }
+                    return get
+                        .inpileVCardList(info => {
+                            const name = info[2];
+                            return get.type(name) === "basic";
+                        })
+                        .some(card => event.filterCard(new lib.element.VCard({ name: card[2], nature: card[3], isCard: true }), player, event));
+                },
+                // usable: 1,
+                chooseButton: {
+                    dialog(event, player) {
+                        return ui.create.dialog("道转", [get.inpileVCardList(info => get.type(info[2]) === "basic"), "vcard"]);
+                    },
+                    filter(button, player) {
+                        const event = get.event().getParent();
+                        return event.filterCard(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }), player, event);
+                    },
+                    check(button) {
+                        const event = get.event().getParent();
+                        if (event.type !== "phase") {
+                            return 1;
+                        }
+                        return get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }));
+                    },
+                    prompt(links, player) {
+                        return '###道转###<div class="text center">' + "将你的一张牌当作" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】使用</div>";
+                    },
+                    backup(links) {
+                        return {
+                            filterCard: true,
+                            check(card) {
+                                return 8 - get.value(card);
+                            },
+                            position: "hes",
+                            viewAs: {
+                                name: links[0][2],
+                                nature: links[0][3],
+                            },
+                            async precontent(event, trigger, player) {
+                                player
+                                    .when("useCardAfter")
+                                    .filter(evt => evt.getParent() === event.getParent())
+                                    .then(() => {
+                                        let hasSha = false;
+                                        let hasShan = false;
+                                        for (const card of trigger.cards) {
+                                            const name = get.name(card, player);
+                                            if (name === "sha" || get.translation(name).includes("杀")) {
+                                                hasSha = true;
+                                            } else if (name === "shan" || get.translation(name).includes("闪")) {
+                                                hasShan = true;
+                                            }
+                                            const str = get.cardDescription(card, player);
+                                            if (str.includes("杀")) {
+                                                hasSha = true;
+                                            } else if (str.includes("闪")) {
+                                                hasShan = true;
+                                            }
+                                            if (hasSha && hasShan) break;
+                                        }
+                                        if (hasSha && _status.currentPhase?.isIn() && _status.currentPhase.countCards("he")) {
+                                            if (_status.currentPhase !== player) {
+                                                const target = _status.currentPhase;
+                                                player.discardPlayerCard(target, "he", true);
+                                            } else {
+                                                player.chooseToDiscard("he", true);
+                                            }
+                                        }
+                                        if (hasShan) {
+                                            player.draw();
+                                        }
+                                        if (!hasSha && !hasShan) {
+                                            player.addTempSkill("PSdaozhuan_used");
+                                        }
+                                    });
+                            },
+                        };
+                    },
+                },
+                hiddenCard(player, name) {
+                    return get.type(name) === "basic" && player.countCards("hes") > 0 && !player.hasSkill("PSdaozhuan_used");
+                },
+                ai: {
+                    fireAttack: true,
+                    respondSha: true,
+                    respondShan: true,
+                    skillTagFilter(player, tag, arg) {
+                        if (arg === "respond") {
+                            return false;
+                        }
+                        return get.info("PSdaozhuan").hiddenCard(
+                            player,
+                            (() => {
+                                switch (tag) {
+                                    case "fireAttack":
+                                        return "sha";
+                                    default:
+                                        return tag.slice("respond".length).toLowerCase();
+                                }
+                            })()
+                        );
+                    },
+                    order(item, player) {
+                        if (player && _status.event.type === "phase") {
+                            let max = 0,
+                                names = get.inpileVCardList(info => {
+                                    const name = info[2];
+                                    return get.type(name) !== "basic" && !player.hasSkill("PSdaozuan_used")
+                                });
+                            names = names.map(namex => new lib.element.VCard({ name: namex[2], nature: namex[3] }));
+                            names.forEach(card => {
+                                if (player.getUseValue(card) > 0) {
+                                    let temp = get.order(card);
+                                    if (temp > max) {
+                                        max = temp;
+                                    }
+                                }
+                            });
+                            return max + (max > 0 ? 0.2 : 0);
+                        }
+                        return 10;
+                    },
+                    result: {
+                        player(player) {
+                            if (_status.event.dying) {
+                                return get.attitude(player, _status.event.dying);
+                            }
+                            return 1;
+                        },
+                    },
+                },
+                subSkill: {
+                    backup: {
+                    },
+                    used: {
+                        charlotte: true,
+                        onremove: true,
+                    },
+                },
+            }
         },
+        intro: "由“九个芒果”设计",
         sort: sort.PScharacter_qun,
         translate: {
             PSpot_yuji: "PS势于吉",
             PSpot_yuji_prefix: "PS势",
             PSfuji: "符济",
-            PSfuji_info: "其他角色的出牌阶段限一次，其可以令你交给其一张牌（可以拒绝），称为“符济”。其使用“符济”牌时，此牌的牌面数值+1；然后此牌结算完毕后，你与其各摸一张牌，若此牌造成了伤害或回复了体力，你改为摸两张牌。",
+            PSfuji_info: "其他角色的出牌阶段限一次，其可以令你交给其一张牌（可以拒绝），称为“符济”。其使用“符济”牌时，此牌的牌面数值+1；然后此牌结算完毕后，你与其各摸一张牌，若此牌造成了伤害，你改为摸两张牌。",
             PSdaozhuan: "道转",
-            PSdaozhuan_info: "你可以将区域内的一张牌当做任意基本牌使用。当你以此法使用牌后，若此牌对应的实体牌牌面信息包含：【杀】，你弃置当前回合角色的一张牌;【闪】，你摸一张牌；均不包含，此技能本回合失效。"
+            PSdaozhuan_info: "你可以将一张牌当作任意基本牌使用。当你以此法使用牌后，若此牌对应的实体牌牌面信息包含：“杀”，你弃置当前回合角色的一张牌；“闪”，你摸一张牌；均不包含，此技能本回合失效。"
         },
         rank: rank.epic,
     },
