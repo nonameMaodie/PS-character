@@ -24,3 +24,4 @@ temp/
 node_modules/
 
 # 敏感信息
+*.zip

@@ -2,7 +2,7 @@
 	{
 		"version": "v2.4.0",
 		"date": "",
-		"changes": ["/setPlayer/", "新增了武将PS谋左慈、PS势于吉、PS小乔、PS威刘备", "将露头的武将图全部替换为非露头的", "大幅度调整文件结构", "移除编辑将池功能", "修复PS左慈无法更换技能的bug", "修复PS神左慈〖汲魂〗潜在的bug"],
+		"changes": ["/setPlayer/", "新增了武将PS谋左慈、PS势于吉、PS小乔、PS威刘备", "将露头的武将图全部替换为非露头的", "大幅度调整文件结构", "移除编辑将池功能", "修复了PS左慈无法更换技能的bug", "修复了PS神左慈〖汲魂〗潜在的bug", "修复了其他大大小小的bug"],
 		"players": ["PSsb_zuoci", "PSpot_yuji", "PSxiaoqiao", "PSv_liubei"],
 		"cards": []
 	},
@@ -23,7 +23,7 @@
 	{
 		"version": "v2.1.9",
 		"date": "",
-		"changes": ["/setPlayer/", "新增了武将：PS神南华老仙、狐狸（特殊武将）", "调整了PS郝昭的〖镇骨〗和PS陆绩的〖整论〗", "修复了PS神左慈无限复活的bug", "修复了PS钟琰描述与实际效果不符的bug", "修复了PS神马超发动〖铁骑〗会报错的bug", "修复了其他已知的bug"],
+		"changes": ["/setPlayer/", "新增了武将：PS神南华老仙、狐狸（特殊武将）", "调整了PS郝昭的〖镇骨〗和PS陆绩的〖整论〗", "修复了PS神左慈无限复活的bug", "修复了PS钟琰描述与实际效果不符的bug", "修复了PS马超发动〖铁骑〗会报错的bug", "修复了其他已知的bug"],
 		"players": ["PSshen_nanhualaoxian", "PSsp_huli", "PShaozhao", "PSluji"],
 		"cards": []
 	},

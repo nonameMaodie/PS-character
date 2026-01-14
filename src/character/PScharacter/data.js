@@ -398,7 +398,7 @@ export const data = {
       PSshouyige: "双倍收益哥",
       PSshuangquan: "双全",
       PSshuangquan_info:
-        "锁定技。<br/>①你视为拥有技能〖马术〗〖飞影〗和〖无双〗。<br/>②你使用【杀】可以额外指定一名目标。<br/>③你造成的所有伤害翻倍，你受到的所有伤害减半（向上取整）。<br/>④你拥有双倍的初始手牌。摸牌阶段，你额外摸等量的牌。<br/>⑤你使用牌后，额外使用对应实体卡牌（不嵌套触发）。<br/>⑥当你不因此技能获得的回合结束后，你执行一个额外的回合。<br/>⑦限定技，当你即将阵亡时，终止此次结算，然后你将体力上限调整为8，再将体力值回复至体力上限。<br/>⑧游戏开始时，你获得等量的装备区副类别栏。<br/>⑨你回复体力时，回复效果翻倍。<br/>⑩你使用【铁索连环】时可额外指定两名目标，使用单体普通锦囊牌时可额外指定一名目标。",
+        "锁定技。<br/>①你视为拥有技能〖马术〗〖飞影〗和〖无双〗。<br/>②你使用【杀】可以额外指定一名目标。<br/>③你造成的所有伤害翻倍，你受到的所有伤害减半（向下取整）。<br/>④你拥有双倍的初始手牌。摸牌阶段，你额外摸等量的牌。<br/>⑤你使用牌后，额外使用对应实体卡牌（不嵌套触发）。<br/>⑥当你不因此技能获得的回合结束后，你执行一个额外的回合。<br/>⑦限定技，当你即将阵亡时，终止此次结算，然后你将体力上限调整为8，再将体力值回复至体力上限。<br/>⑧游戏开始时，你获得等量的装备区副类别栏。<br/>⑨你回复体力时，回复效果翻倍。<br/>⑩你使用【铁索连环】时可额外指定两名目标，使用单体普通锦囊牌时可额外指定一名目标。",
     },
     rank: rank.legend,
   },
@@ -1421,6 +1421,7 @@ export const data = {
         },
         frequent: true,
         filter: function (event, player) {
+          if (!event.cards) return false;
           if (
             event.player === player ||
             ["useCard", "respond"].includes(event.getParent().name)
@@ -5908,11 +5909,9 @@ export const data = {
 
           return true;
         },
-        content: function () {
-          "step 0";
-          player.draw(2);
-          ("step 1");
-          player
+        async content(event, trigger, player) {
+          await player.draw(2);
+          const result = await player
             .chooseCard(
               1,
               "he",
@@ -5928,12 +5927,31 @@ export const data = {
               if (get.tag(card, "damage")) return 1;
               if (get.type(card) == "equip") return 1;
               return 0;
-            });
-          ("step 2");
-          player.give(result.cards, trigger.player);
-          player.gainPlayerCard(2, "he", trigger.player, false, "visible");
-          trigger.player.addSkill("xiantu4");
-          trigger.player.storage.xiantu4.push(player);
+            })
+            .forResult();
+
+          if (result?.bool && result.cards?.length) {
+            await player.give(result.cards, trigger.player);
+            await player.gainPlayerCard(2, "he", trigger.player, false, "visible");
+
+            player
+              .when({
+                global: "phaseAnyEnd",
+              })
+              .filter(evt => evt == event.getParent(evt.name, true, true))
+              .step(async (event, trigger, player) => {
+                if (game.hasGlobalHistory("everything", evt => {
+                  if (evt.name != "die" || evt.source != target) {
+                    return false;
+                  }
+                  return evt.getParent(trigger.name, true) == trigger;
+                })) {
+                  return;
+                }
+                player.logSkill("xiantu", null, null, null, ["loseHp"]);
+                await player.loseHp();
+              });
+          }
         },
         ai: {
           threaten: 1.1,
@@ -7349,7 +7367,7 @@ export const data = {
               var evt = event.getParent().relatedEvent;
               if (
                 get.position(event.cards[0], true) != "d" ||
-                evt.player == player
+                evt?.player == player
               )
                 return false;
               return get.suit(event.cards[0]) == "club";
@@ -8744,6 +8762,18 @@ export const data = {
         forced: true,
         popup: false,
         silent: true,
+        /**
+         * 更换武将牌
+         * @param { Player } player 角色
+         * @param { string } name1 变更前武将名
+         * @param { string } name2 变更后武将名
+         * @param { number[] } hp_MaxHp 变更后是否改变体力值和体力上限
+         * @returns { object } Event#changeCharacter 返回一个事件对象
+         */
+        reinitCharacter(player, name1, name2, hp_MaxHp) {
+          player.reinit(name1, name1, hp_MaxHp);
+          return player.reinitCharacter(name1, name2);
+        },
         content: function () {
           var num = trigger.num;
           trigger.num = function (target) {
@@ -9117,18 +9147,6 @@ export const data = {
         enable: "phaseUse",
         filter: function (event, player) {
           return !player.hasSkill("PSbaguan2_clear");
-        },
-        /**
-         * 更换武将牌
-         * @param { Player } player 角色
-         * @param { string } name1 变更前武将名
-         * @param { string } name2 变更后武将名
-         * @param { number[] } hp_MaxHp 变更后是否改变体力值和体力上限
-         * @returns { object } Event#changeCharacter 返回一个事件对象
-         */
-        reinitCharacter(player, name1, name2, hp_MaxHp) {
-          player.reinit(name1, name1, hp_MaxHp);
-          return player.reinitCharacter(name1, name2);
         },
         content: function () {
           "step 0";
@@ -12946,12 +12964,6 @@ export const data = {
           next.set("ai", function () {
             return event.num.toString();
           });
-          /* player.popup(num--);//玩家武将牌弹出数字
-                    event.popup = setInterval(function () {
-                        player.popup(num);
-                        num--;
-                        if (num == 0) num = '时间到！';
-                    }, 1000);//每过1秒弹出一次 */
           var o = {
             O: function (num = 3) {
               if (typeof num != "number") num = 3;
@@ -12961,13 +12973,10 @@ export const data = {
               });
             },
           };
-          o.O("尊嘟假嘟"); //显示倒计时
+          game.me === player && o.O("尊嘟假嘟"); //显示倒计时
           setTimeout(function () {
             clearInterval(event.popup); //停止弹出函数
             if (next.controlbars) {
-              /* for (var i = 0; i < next.controlbars.length - 1; i++) {
-                                next.controlbars[i].close();//按钮关闭
-                            } */
               next.controlbars.at(-1).click();
             }
           }, 3000); //3秒后自动点击“取消”
@@ -24033,13 +24042,11 @@ export const data = {
         filter: function (event, player) {
           return player.countCards("h") > 0;
         },
-        content() {
-          "step 0";
-          player.showCards(cards, get.translation(player) + "展示了部分手牌");
-          ("step 1");
+        async content(event, trigger, player) {
+          await player.showCards(event.cards, get.translation(player) + "展示了部分手牌");
           const list = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
-          const num = getCardsSuitsLen(cards, player);
-          player
+          const num = getCardsSuitsLen(event.cards, player);
+          const { control } = await player
             .chooseControl(list)
             .set("prompt", "请选择要亮出牌堆顶的牌数")
             .set("ai", () => {
@@ -24048,18 +24055,17 @@ export const data = {
             .set(
               "choice",
               num - 2 + (player.awakenedSkills.includes("PSjixi") && num > 2)
-            );
-          ("step 2");
-          if (result.control) {
-            event.cardsx = get.cards(+result.control);
-            const bool =
-              getCardsSuitsLen(cards, player) > getCardsSuitsLen(event.cardsx);
+            )
+            .forResult();
+          if (control) {
+            const cards = get.cards(+control);
+            const bool = getCardsSuitsLen(event.cards, player) > getCardsSuitsLen(cards);
             const prompt = `花色数${bool ? '<span class="greentext">小于</span>' : '<span class="firetext">不小于</span>'}${get.translation(player)}展示的手牌花色数`;
-            player.showCards(event.cardsx, prompt);
+            await player.showCards(cards, prompt);
             if (bool) {
-              player.draw(event.cardsx.length);
+              await player.draw(cards.length);
             } else {
-              player.loseHp();
+              await player.loseHp();
             }
           }
         },
@@ -27504,6 +27510,7 @@ export const data = {
             get usable() {
               return game.countPlayer(current => current.group == "shu");
             },
+            prompt: "出牌阶段限X次，你可以从已开通的蜀势力的角色或从五虎将的技能库中选取至多五个并依次分发（X为场上蜀势力角色的数量）",
             async content(event, trigger, player) {
               const control = await lib.skill.PSlixian.cost(event, null, player);
               await lib.skill.PSlixian.content({ cost_data: { control } }, null, player);
