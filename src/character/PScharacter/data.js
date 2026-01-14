@@ -26628,6 +26628,18 @@ export const data = {
             ui.updatehl();
           }
         },
+        ai: {
+          effect: {
+            player_use(card, player, target) {
+              if (get.itemtype(card) == "card") {
+                if (card.hasGaintag("PShuanqu")) return [1, 1];
+              } else if (card.isCard && card.cards) {
+                if (card.cards.some((card) => card.hasGaintag("PShuanqu")))
+                  return [1, 1];
+              }
+            },
+          },
+        },
         subSkill: {
           use: {
             trigger: {
@@ -26714,6 +26726,15 @@ export const data = {
         async cost(event, trigger, player) {
           const target = trigger.target;
           if (event.triggername == "useCardToPlayered") {
+            const nogoon = function () {
+              if (trigger.target === player) {
+                if (get.type(trigger.card, player) === "equip") return false;
+                if (player.hp === player.maxHp && get.name(trigger.card, player) === "tao") return false;
+              }
+              if (get.type(trigger.card, player) === "delay") return false;
+              if (get.value(trigger.card, player) < 3) return false;
+              return true;
+            }
             const { bool, links } = await player
               .choosePlayerCard(
                 target,
@@ -26721,6 +26742,12 @@ export const data = {
                 false,
                 `戏曹：是否将${get.translation(target)}的一张牌置入仁库中，然后令${get.translation(trigger.card)}额外结算一次`
               )
+              .set("nogoon", nogoon)
+              .set("ai", card => {
+                const { nogoon } = get.event();
+                if (!nogoon()) return 0;
+                return 12 - get.value(card);
+              })
               .forResult();
             event.result = {
               bool,
@@ -26733,6 +26760,14 @@ export const data = {
                 false,
                 `戏曹：是否将你的一张牌置于仁库中，然后令${get.translation(trigger.card)}对你无效`
               )
+              .set("ai", card => {
+                const player = get.player();
+                if (trigger.player === player) {
+                  if (player.countCards("h") > 5 && _status.renku.length < 5 && get.value(trigger.card) <= 5) return 3 - get.value(card);
+                  return 0;
+                }
+                return 12 - get.value(card);
+              })
               .forResult();
             event.result = {
               bool,
@@ -26747,8 +26782,10 @@ export const data = {
           game.log(target, "将", card, "置入了仁库");
           target.lose(card, ui.special, "toRenku");
           if (event.triggername == "useCardToPlayered") {
+            game.log(trigger.card, "额外结算一次");
             trigger.getParent().effectCount++;
           } else {
+            game.log(trigger.card, "对", player, "无效");
             trigger.getParent().excluded.add(player);
           }
           player.addTempSkill("PSxicao_used");
@@ -26860,7 +26897,7 @@ export const data = {
                   }
                   let add = 0;
                   if (player.hasUseTarget(card)) add += 3;
-                  if (lib.card[card].ai?.tag?.damage) add += 3;
+                  if (lib.card[card.name].ai?.tag?.damage) add += 3;
                   return (
                     get.value(card, target) - get.value(card, player) + add
                   );
@@ -26885,7 +26922,7 @@ export const data = {
                   return 1;
                 },
                 target: function (player, target) {
-                  if (get.attitude(target, target) <= 0) return 0;
+                  if (get.attitude(player, target) <= 0) return 0;
                   return get.attitude(player, target);
                 },
               },
@@ -27258,4 +27295,301 @@ export const data = {
     },
     rank: rank.rare,
   },
+  PSv_liubei: {
+    info: {
+      sex: "male",
+      group: "shu",
+      hp: 4,
+      skills: ["PSlixian", "PSweiyi"],
+      dieAudios: ["ext:PS武将/audio/die:true"],
+      trashBin: [],
+    },
+    skills: {
+      PSlixian: {
+        audio: "ext:PS武将/audio/skill:2",
+        trigger: {
+          player: ["changeHp", "phaseJieshuBegin"],
+        },
+        getList() {
+          let list;
+          if (get.mode() == "guozhan") {
+            list = [];
+            for (const i in lib.characterPack.mode_guozhan) {
+              if (lib.character[i]) {
+                list.push(i);
+              }
+            }
+          } else if (_status.connectMode) {
+            list = get.charactersOL();
+          } else {
+            list = [];
+            for (const i in lib.character) {
+              if (lib.filter.characterDisabled2(i) || lib.filter.characterDisabled(i)) {
+                continue;
+              }
+              list.push(i);
+            }
+          }
+          return list;
+        },
+        getWuhuSkills(list) {
+          const skills = [];
+          const wuhu = ["关羽", "张飞", "赵云", "马超", "黄忠"],
+            wuhuList = list.filter(character => {
+              const names = get.characterSurname(character).map(name => name.join(""));
+              return names.containsSome(...wuhu);
+            });
+          for (const i of wuhuList) {
+            const skillsx = get.character(i).skills
+              .filter(skill => {
+                const info = get.info(skill);
+                return info && !info.hiddenSkill && !info.charlotte;
+              })
+            skills.addArray(skillsx);
+          }
+          return skills;
+        },
+        getShuSkills(list) {
+          list = list.filter(i => get.character(i).group == "shu");
+          if (!list.length) return list;
+          const skills = [];
+          for (const i of list) {
+            const skillsx = get.character(i).skills
+              .filter(skill => {
+                const info = get.info(skill);
+                return info && !info.hiddenSkill && !info.charlotte;
+              })
+            skills.addArray(skillsx);
+          }
+          return skills;
+        },
+        getIndex(event, player, name) {
+          return name === "changeHp" ? Math.abs(event.num) : 1;
+        },
+        getChoiceList(evtName) {
+          const list = ["蜀势力", "五虎将"];
+          if (evtName !== "PSlixian_use") list.push("cancel2");
+          return list;
+        },
+        async cost(event, trigger, player) {
+          const { control } = await player
+            .chooseControl(lib.skill.PSlixian.getChoiceList(event.name))
+            .set("ai", function () {
+              return get.event().choice;
+            })
+            .set("prompt", `礼贤：${event.name === "PSlixian_use" ? "请你" : "你可以"}从“蜀势力”或“五虎将”中，选择至多5个技能依次分发`)
+            .set("choice", ["蜀势力", "五虎将"].randomGet())
+            .forResult();
+          if (event.name === "PSlixian_use") return control;
+          event.result = {
+            bool: control !== "cancel2",
+            cost_data: {
+              control
+            }
+          }
+        },
+        async content(event, trigger, player) {
+          const list = lib.skill.PSlixian.getList();
+          const skills = (event.cost_data.control === "蜀势力"
+            ? lib.skill.PSlixian.getShuSkills(list)
+            : lib.skill.PSlixian.getWuhuSkills(list))
+            .randomGets(5);
+
+          const skillList = [];
+          for (const skill of skills) {
+            skillList.push([skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
+          }
+          const next = player.chooseButton(["礼贤：请选择一至五项", [skillList, "textbutton"]]);
+          next.set("forced", true);
+          next.set("selectButton", [1, 5]);
+          next.set("ai", button => {
+            const skill = button.link,
+              choice = get.event().choice;
+            if (skill == choice) {
+              return 2;
+            }
+            return 1;
+          });
+          next.set(
+            "choice",
+            skills.sort((a, b) => {
+              return get.skillRank(b, "in") - get.skillRank(a, "in");
+            })[0]
+          );
+          const { links } = await next.forResult();
+
+          const result = await player.chooseTarget(`礼贤：将${links.map(s => "〖" + get.translation(s) + "〗").join("、")}依次分发给至多${get.cnNumber(links.length)}名角色`, [1, links.length], true)
+            .set("targetprompt", target => {
+              const count = ui.selected.targets.length;
+              return get.translation(links[count - 1]);
+            })
+            .set("ai", target => {
+              const att = get.attitude(_status.event.player, target);
+              if (_status.event.enemy) {
+                return -att;
+              } else if (att > 0) {
+                return att;
+              }
+              return 0;
+            })
+            .forResult();
+          if (result.targets?.length) {
+            player.line(result.targets);
+            const targets = result.targets;
+            const targetsx = targets.filter(target => target.group !== "shu");
+            if (player.hasSkill("PSweiyi") && targetsx.length && !Object.keys(player.disabledSkills).includes("PSweiyi")) {
+              for (const target of targetsx) {
+                const { control } = await target
+                  .chooseControl(["失去一个技能", "翻面"])
+                  .set("ai", function () {
+                    return get.event().choice();
+                  })
+                  .set("prompt", `礼贤：失去一个技能或者翻面`)
+                  .set("choice", () => {
+                    const target = get.event().player;
+                    if (target.isTurnedOver()) return "翻面";
+                    if (Math.random() <= 0.8) return "失去一个技能";
+                    return "翻面";
+                  })
+                  .forResult();
+                if (control === "翻面") {
+                  await target.turnOver();
+                } else {
+                  const skills = target.getSkills(null, false, false).filter(skill => {
+                    let info = get.info(skill);
+                    if (!info || info.charlotte || get.skillInfoTranslation(skill, player).length == 0) {
+                      return false;
+                    }
+                    return true;
+                  });
+                  if (!skills.length) {
+                    continue;
+                  }
+                  if (skills.length === 1) {
+                    await target.removeSkills(skills[0]);
+                    continue;
+                  }
+                  const next = target.chooseButton(["礼贤：选择失去1个技能", [skills, "skill"]]);
+                  next.set("forced", true);
+                  next.set("ai", button => {
+                    const skill = button.link,
+                      choice = get.event().choice;
+                    if (skill == choice) {
+                      return 2;
+                    }
+                    return 1;
+                  });
+                  next.set(
+                    "choice",
+                    skills.sort((a, b) => {
+                      return get.skillRank(b, "out") - get.skillRank(a, "out");
+                    })[0]
+                  );
+                  const { links } = await next.forResult();
+                  await target.removeSkills(links[0]);
+                }
+              }
+            }
+            for (let i = 0; i < targets.length; i++) {
+              await targets[i].addSkills(links[i]);
+            }
+            await game.delayx();
+          }
+        },
+        group: ["PSlixian_use"],
+        subSkill: {
+          use: {
+            audio: "PSlixian",
+            enable: "phaseUse",
+            get usable() {
+              return game.countPlayer(current => current.group == "shu");
+            },
+            async content(event, trigger, player) {
+              const control = await lib.skill.PSlixian.cost(event, null, player);
+              await lib.skill.PSlixian.content({ cost_data: { control } }, null, player);
+            },
+            ai: {
+              order: 114514,
+              result: {
+                player(player, target) {
+                  return 1;
+                },
+              },
+            },
+          },
+        }
+      },
+      PSweiyi: {
+        audio: "ext:PS武将/audio/skill:2",
+        global: "PSweiyi_recover",
+        subSkill: {
+          recover: {
+            audio: "PSweiyi",
+            enable: "phaseUse",
+            filter(event, player) {
+              if (player.group !== "shu") return false;
+              return game.hasPlayer(function (current) {
+                return current !== player && current.hasSkill("PSweiyi") && current.isDamaged();
+              });
+            },
+            usable: 1,
+            prompt() {
+              const player = get.event().player;
+              const list = game.filterPlayer(function (current) {
+                return current !== player && current.hasSkill("PSweiyi") && current.isDamaged();
+              });
+              let str = "令" + get.translation(list);
+              if (list.length > 1) {
+                str += "中的一人";
+              }
+              str += "回复一点体力";
+              return str;
+            },
+            filterTarget(card, player, target) {
+              return target !== player && target.hasSkill("PSweiyi") && target.isDamaged();
+            },
+            selectTarget() {
+              const player = get.player();
+              const targets = game.filterPlayer(function (current) {
+                return current !== player && current.hasSkill("PSweiyi") && current.isDamaged();
+              });
+              return targets.length > 1 ? 1 : -1;
+            },
+            async content(event, trigger, player) {
+              const target = event.target;
+              await target.recover();
+            },
+            ai: {
+              order: 114514,
+              threaten: 3,
+              result: {
+                player(player, target) {
+                  return get.attitude(player, target) > 0 ? 1 : -1;
+                },
+                target(player, target) {
+                  return 1;
+                },
+              },
+            },
+          }
+        }
+      }
+    },
+    intro: "由“一顿七只屑狐狸”设计",
+    sort: sort.PScharacter_shu,
+    translate: {
+      PSv_liubei: "PS威刘备",
+      "#ext:PS武将/audio/die/PSv_liubei:die": "醉泣江山君莫笑，似我刘备有几人。",
+      PSv_liubei_prefix: "PS威",
+      PSlixian: "礼贤",
+      PSlixian_info: "你可以于以下时机发动〖礼贤〗：1. 出牌阶段限X次；2. 变化一点体力时；3. 结束阶段限一次（X为场上蜀势力角色的数量）。你从已开通的蜀势力的角色或从五虎将的技能库中选取至多五个并依次分发。",
+      "#ext:PS武将/audio/skill/PSlixian1": "我将丹心酿烈酒，且取一觞慰风尘。",
+      "#ext:PS武将/audio/skill/PSlixian2": "余酒尽倾江海中，与君共宴天下人。",
+      PSweiyi: "威仪",
+      PSweiyi_info: "威主技，每阶段限一次，其他蜀势力角色的出牌阶段可以令你回复一点体力。你对非蜀势力角色发动〖礼贤〗时，该角色须选择一项: 1. 失去一个技能；2.翻面。",
+      "#ext:PS武将/audio/skill/PSweiyi1": "卿乃志同之股肱，国贼当前，可欲诛之。",
+      "#ext:PS武将/audio/skill/PSweiyi2": "请君振炎汉之武运，除篡国之逆贼。",
+    },
+    rank: rank.legend,
+  }
 };
