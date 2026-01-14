@@ -70,7 +70,7 @@ onPrecontent(() => {
 //切换BGM
 setConfig({
   Background_Music: {
-    name: `背景音乐<div class="PSmusic-container"><div class="PSneedle" style="background: url(${lib.assetURL}extension/PS武将/image/music/needle.png) no-repeat 0 0/cover"></div><div class="PSrecord-box"><div class="PSrecord" style="background: url(${lib.assetURL}extension/PS武将/image/music/coverall.png) no-repeat -140px -580px"></div><div class="PSrecord-img" style="background: url(${lib.assetURL}extension/PS武将/image/music/${lib.config.extension_PS武将_Background_Music || "1"}.jpg) no-repeat 0 0/cover"></div></div></div>`,
+    name: "背景音乐",
     clear: true,
     intro: "背景音乐：可随意点播、切换优质动听的背景音乐",
     init:
@@ -111,8 +111,6 @@ setConfig({
       30: "太虚-长设之战",
     },
     onclick(item) {
-      const div = document.querySelector(".PSrecord-box .PSrecord-img");
-      div.style.backgroundImage = `url(${lib.assetURL}extension/PS武将/image/music/${item}.jpg)`;
       game.saveConfig("extension_PS武将_Background_Music", item);
       playBackgroundMusic();
       ui.backgroundMusic.addEventListener("ended", playBackgroundMusic);

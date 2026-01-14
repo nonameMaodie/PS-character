@@ -1,6 +1,7 @@
 import { game, lib, ui } from "noname";
 import { onPrecontent, setConfig } from "../utils/hooks.js";
 import { MINVERSION, VERSION } from "../version.js";
+import { showChangelog } from "../utils/changelog.js"
 
 let updateHistory = null;
 
@@ -10,18 +11,18 @@ function showChangeLog(version) {
     Object.keys(lib.characterPack.PSsp_character || {})
   );
 
-  version = version || lib.extensionPack["PS武将"].version;
-  const changeInfo = updateHistory[lib.extensionPack.PS武将.version];
+  const changeInfo = updateHistory[0];
+  version = changeInfo.version;
   //加载
   var dialog = ui.create.dialog("hidden");
   dialog.addText(
     '<div style="font-size:24px;margin-top:5px;text-align:center;">PS武将 ' +
-      version +
-      " 版本更新内容</div>"
+    version +
+    " 版本更新内容</div>"
   );
   dialog.style.left = "25%";
   dialog.style.width = "50%";
-  for (var log of changeInfo.changeLog) {
+  for (var log of changeInfo.changes) {
     switch (log) {
       case "/setPlayer/":
         dialog.addText(
@@ -142,7 +143,7 @@ onPrecontent(() => {
       return (
         !lib.config.extension_PS武将_PS_version ||
         lib.config.extension_PS武将_PS_version !=
-          lib.extensionPack.PS武将.version
+        lib.extensionPack.PS武将.version
       );
     },
     direct: true,
@@ -157,68 +158,52 @@ onPrecontent(() => {
   };
 });
 
+let observed = false;
+
 //更新说明
 setConfig({
-  versionUpdate: {
+  updateInfo: {
     name: `版本：${VERSION}`,
-    init: "1",
     unfrequent: true,
-    intro: "查看此版本更新说明",
+    intro: "查看更新内容",
+    init: "1",
     item: {
-      1: "<font color=#2cb625>更新说明",
-      //"2": "<font color=#00FF00>更新说明",
+      1: "<font color=#2cb625>更新内容",
     },
-    textMenu(node, link) {
-      const characters = Object.keys(
-        lib.characterPack.PScharacter || {}
-      ).concat(Object.keys(lib.characterPack.PSsp_character || {}));
-      lib.setScroll(node.parentNode);
-      node.parentNode.style.transform = "translateY(-100px)";
-      //node.parentNode.style.height = "710px";
-      node.parentNode.style.width = "350px";
-      node.style.cssText = "width: 350px; padding:5px; box-sizing: border-box;";
-      let str = "";
-      if (lib.extensionPack.PS武将) {
-        const info = updateHistory[VERSION];
-        if (!info) {
-          node.innerHTML = "<font color=red>[读取更新说明出现异常]</font>";
-          return;
-        }
-        const changeLog = info.changeLog.slice(0);
-        changeLog.forEach((i) => {
-          if (i !== "/setPlayer/" && i !== "/setCard/") {
-            characters.forEach((j) => {
-              if (
-                (i.includes(lib.translate[j]) ||
-                  (i.includes("〖") && i.includes("〗"))) &&
-                !i.startsWith("收录了")
-              ) {
-                i = i
-                  .replace(
-                    new RegExp(lib.translate[j], "g"),
-                    `<font color=#ff9800>${lib.translate[j]}</font>`
-                  )
-                  .replace(/〖/g, "<font color=#24c022>〖")
-                  .replace(/〗/g, "〗</font>");
+    visualBar(node, item, create, switcher) {
+      if (observed) return;
+      observed = true;
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "class" &&
+            switcher.classList.contains("on")
+          ) {
+            showChangelog(updateHistory, () => {
+              const popupContainer =
+                ui.window.querySelector(".popup-container");
+              if (popupContainer) {
+                popupContainer.hide();
               }
+              switcher.classList.remove("on");
             });
-            str += `·${i}<br>`;
           }
         });
-        str = `<span style="width:335px; display:block; font-size: 15px">${str}<span>`;
-        /* '·<span style="color:#ffce46">PS左慈</span>增强，制衡化身时额外获得一张化身牌。',
-                '·<span style="color:#ffce46">PS裴秀</span><span style="color:#24c022">【行图】</span>增加了“倒计时”显示。',
-                '·优化了<span style="color:#ffce46">PS赵襄、大魏吴王、双倍许劭、PS神张辽</span>选技能时的loading框样式。（需要开启扩展<span style="color:#24c022">“天牢令”</span>，已征得<span style="color:#bd6420">铝宝</span>和<span style="color:#bd6420">雷佬</span>同意）', */
-        node.innerHTML = str;
-      } else {
-        node.innerHTML =
-          "<font color=red>[需要开启本扩展并重启才能查看]</font>";
-      }
+      });
+      observer.observe(switcher, {
+        attributes: true,
+        attributeOldValue: true,
+        attributeFilter: ["class"],
+      });
+    },
+    visualMenu(node, link, name, config) {
+      node.parentElement.style.display = "none";
     },
   },
   bd1: {
     clear: true,
-    name: `最低支持本体版本：${MINVERSION}`,
+    name: `最低适配：${MINVERSION}`,
     nopointer: true,
   },
 });
