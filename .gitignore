@@ -1,5 +1,3 @@
-.vscode
-
 # 操作系统相关
 Thumbs.db
 .DS_Store
@@ -26,3 +24,4 @@ temp/
 node_modules/
 
 # 敏感信息
+*.zip
