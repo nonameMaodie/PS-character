@@ -1,33 +1,30 @@
-# PS武将
+# PS武将扩展项目分析
 
-## 介绍
+## 项目概述
+本扩展主要是对本体武将进行不同方向的强化设计或重构，设计来源于本人和广大网友。当然，除了对本体武将的重新设计外，本扩展还有一些奇奇怪怪的特殊武将。
 
-无名杀PS武将扩展仓库
+## 项目结构
+```
+PS武将/
+├── README.md                 # 项目说明文档
+├── extension.js              # 扩展入口文件
+├── info.json                 # 扩展信息配置
+├── package.json              # 项目配置文件
+├── vite.config.js            # Vite构建配置
+├── audio/                    # 音频文件目录
+├── image/                    # 图像文件目录
+├── json/                     # JSON数据文件
+├── src/
+│   ├── extension.js          # 主扩展模块
+│   ├── version.js            # 版本信息
+│   ├── character/            # 角色数据
+│   │   ├── PScharacter/      # 常规PS武将
+│   │   └── PSsp_character/   # 特殊PS武将
+│   ├── features/             # 功能模块
+│   └── utils/                # 工具函数
+```
 
 ## 开源地址
 
-- github仓库地址：https://github.com/nineMangos/PS-character
+- github仓库地址：https://github.com/nonameMaodie/PS-character
 - gitee仓库地址：https://gitee.com/ninemangos/PS-character
-
-## 使用说明
-
-1.  确保您已下载好无名杀客户端并能正常启动
-2.  从本仓库中下载扩展压缩包
-3.  使用《万能导入法》导入本扩展
-
-## 无名杀下载/试玩方式
-
-1.  [点击此处可以下载无名杀客户端](https://github.com/libccy/noname/releases/tag/chromium77-client "客户端仓库地址")
-2.  [点击此处可以下载无名杀完整包](https://github.com/libccy/noname/releases "无名杀仓库地址")
-3.  [点击此处试玩无名杀](https://spmario233.github.io/noname/index.html) （图片素材加载速度较慢，不推荐）
-
-## 参与贡献
-
-1.  Fork 本仓库
-2.  提交代码
-3.  新建 Pull Request
-
-## 其他的无名杀资源
-
-- [棘手懒人包仓库](https://github.com/lieren2023/noname-for-dummies)
-- [魔改十周年UI仓库](https://github.com/mengxinzxz/decadeUI--mx)
