@@ -1,0 +1,16 @@
+{
+	"name": "ps-character",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"build": "vite build",
+		"build:dev": "vite build --mode development"
+	},
+	"devDependencies": {
+		"terser": "^5.44.1",
+		"vite": "^7.2.4",
+		"vite-plugin-css-injected-by-js": "^3.5.2",
+		"vite-plugin-static-copy": "^3.1.4"
+	}
+}
