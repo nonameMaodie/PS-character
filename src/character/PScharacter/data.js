@@ -26752,6 +26752,7 @@ export const data = {
               .set("ai", card => {
                 const { nogoon } = get.event();
                 if (!nogoon()) return 0;
+                if (!card.name || !lib.card[card.name] || !card.ai) return 1;
                 return 12 - get.value(card);
               })
               .forResult();
