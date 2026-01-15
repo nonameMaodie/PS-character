@@ -1,4 +1,4 @@
-import { ui } from "noname";
+import { ui, lib } from "noname";
 
 class ChangelogShadowDOM {
   static instance = null;
