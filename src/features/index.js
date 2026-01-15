@@ -1,5 +1,4 @@
 import "./addNamePrefix.js";
-import "./addTranslation.js";
 import "./changeVoices.js";
 import "./extensionIntro.js";
 import "./linesFix.js";

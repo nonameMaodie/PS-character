@@ -21412,78 +21412,110 @@ export const data = {
             ).length === 1
           );
         },
-        direct: true,
         init: function (player, skill) {
           if (!player.storage.PSlingren_damage)
             player.storage.PSlingren_damage = [];
           if (!player.storage.PSlingren_multi)
             player.storage.PSlingren_multi = [];
         },
-        content() {
-          "step 0";
-          player.logSkill("PSlingren", event.target);
-          var target = trigger.target;
-          event.target = target;
-          event.choice = {
-            basic: false,
-            trick: false,
-            equip: false,
-          };
-          player
+        async cost(event, trigger, player) {
+          const getKnownTypes = function () {
+            const cards = trigger.target.getKnownCards(player);
+            let isAllCardsKnown = false;
+            if (trigger.target.countCards("h") === cards.length) isAllCardsKnown = true;
+            return {
+              isAllCardsKnown,
+              knownTypes: [...new Set(cards.map((card) => get.type2(card)))]
+            };
+          }
+          const { bool, links } = await player
             .chooseButton(
               [
-                `凌人：是否猜测${get.translation(target)}有哪些类别的手牌`,
+                `凌人：是否猜测${get.translation(trigger.target)}有哪些类别的手牌`,
                 [["basic", "trick", "equip"], "vcard"],
               ],
               [0, 3],
               false
             )
+            .set("getKnownTypes", getKnownTypes)
+            .set("targetx", trigger.target)
             .set("ai", function (button) {
+              const event = get.event();
+              event.getKnownTypesResult ??= event.getKnownTypes();
+              const { isAllCardsKnown, knownTypes } = event.getKnownTypesResult;
+              const target = event.targetx;
+
               switch (button.link[2]) {
-                case "basic":
-                  var rand = 0.95;
+                case "basic": {
+                  if (knownTypes.includes("basic")) {
+                    return true;
+                  } else if (isAllCardsKnown) {
+                    return false;
+                  }
+                  let rand = 0.95;
                   if (!target.countCards("h", { type: ["basic"] })) rand = 0.05;
                   if (!target.countCards("h")) rand = 0;
                   return Math.random() < rand ? true : false;
-                case "trick":
-                  var rand = 0.9;
+                }
+                case "trick": {
+                  if (knownTypes.includes("trick")) {
+                    return true;
+                  } else if (isAllCardsKnown) {
+                    return false;
+                  }
+                  let rand = 0.9;
                   if (!target.countCards("h", { type: ["trick", "delay"] }))
                     rand = 0.1;
                   if (!target.countCards("h")) rand = 0;
                   return Math.random() < rand ? true : false;
-                case "equip":
-                  var rand = 0.75;
+                }
+                case "equip": {
+                  if (knownTypes.includes("equip")) {
+                    return true;
+                  } else if (isAllCardsKnown) {
+                    return false;
+                  }
+                  let rand = 0.75;
                   if (!target.countCards("h", { type: ["equip"] })) rand = 0.25;
                   if (!target.countCards("h")) rand = 0;
                   return Math.random() < rand ? true : false;
+                }
               }
-            });
-          ("step 1");
-          if (result.bool) {
-            var choices = result.links.map((i) => i[2]);
-            if (!event.isMine() && !event.isOnline()) game.delayx();
-            var list = [];
-            event.num = 0;
-            ["basic", "trick", "equip"].forEach((type) => {
-              if (
-                choices.includes(type) ==
-                target.countCards(
-                  "h",
-                  (card) => get.type2(card, target) === type
-                ) >
-                0
-              )
-                event.num++;
-            });
+            })
+            .forResult();
+          if (!bool) {
+            event.result = false;
           } else {
-            event.finish();
+            event.result = {
+              bool,
+              cost_data: {
+                choices: links.map((i) => i[2])
+              }
+            }
           }
-          ("step 2");
-          player.popup("猜对" + get.cnNumber(event.num) + "项");
-          game.log(player, "猜对了" + get.cnNumber(event.num) + "项");
-          const num = event.num;
+        },
+        async content(event, trigger, player) {
+          const choices = event.cost_data.choices;
+          const target = trigger.target;
+          if (!event.isMine() && !event.isOnline()) await game.delayx();
+          const list = [];
+          let count = 0;
+          ["basic", "trick", "equip"].forEach((type) => {
+            if (
+              choices.includes(type) ==
+              target.countCards(
+                "h",
+                (card) => get.type2(card, target) === type
+              ) >
+              0
+            )
+              count++;
+          });
+          player.popup("猜对" + get.cnNumber(count) + "项");
+          game.log(player, "猜对了" + get.cnNumber(count) + "项");
+          const num = count;
           if (num >= 0) {
-            player.draw(2);
+            await player.draw(2);
           }
           if (num >= 1) {
             player.addTempSkill("PSlingren_damage");
@@ -21502,7 +21534,7 @@ export const data = {
               ].randomGet();
               changeSkillAudio(skill, player.name, audioName);
               player.popup(skill);
-              player.addTempSkill(skill, { player: "phaseBegin" });
+              await player.addTempSkills(skill, { player: "phaseBegin" });
             }
           }
         },
