@@ -299,9 +299,11 @@ async function checkForUpdates(showAlert = true) {
                 // 4. 删除已删除的文件
                 for (const file of files) {
                     if (file.status === 'removed') {
-                        await game.promises.removeFile(`${lib.assetURL}extension/${repoTranlate}/${file.filename}`)
                         files.remove(file);
-                        console.log("已删除文件：", `【${file.filename}】`);
+                        try {
+                            await game.promises.removeFile(`${lib.assetURL}extension/${repoTranlate}/${file.filename}`)
+                            console.log("已删除文件：", `【${file.filename}】`);
+                        } catch {/*empty*/ }
                     }
                 }
                 // 5. 下载新增或被修改的文件
