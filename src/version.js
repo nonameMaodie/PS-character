@@ -1,4 +1,4 @@
-const VERSION = "2.4.2";
-const MINVERSION = "1.11.0";
+const VERSION = "v2.4.3";
+const MINVERSION = "v1.11.0";
 
 export { VERSION, MINVERSION };

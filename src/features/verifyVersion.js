@@ -2,6 +2,7 @@ import { game, lib, ui } from "noname";
 import { onPrecontent, setConfig } from "../utils/hooks.js";
 import { MINVERSION, VERSION } from "../version.js";
 import { showChangelog } from "../utils/changelog.js"
+import { checkVersion } from "../utils/checkVersion.js";
 
 let updateHistory = null;
 
@@ -79,40 +80,8 @@ function showChangeLog(version) {
   });
 }
 
-/**
- * 本体版本验证
- * @param {string} curVersion 当前版本
- * @param {string} minVersion 要求的最小版本
- * @returns {boolean} 是否满足最低版本要求
- */
-function compareVersion(curVersion, minVersion) {
-  function getSliceVersion(version) {
-    const spotIndex = version.search(/(?<=\d+\.\d+\.\d+)(\.)/);
-    if (!spotIndex === -1) version = version.slice(0, spotIndex);
-    return version.split(".");
-  }
-  curVersion = getSliceVersion(curVersion);
-  minVersion = getSliceVersion(minVersion);
-  let bool = false;
-  for (let i = 0; i < curVersion.length; i++) {
-    if (+curVersion[i] > +minVersion[i]) {
-      bool = true;
-      break;
-    }
-    if (+curVersion[i] === +minVersion[i]) {
-      if (i === curVersion.length - 1) {
-        bool = true;
-        break;
-      }
-    } else {
-      break;
-    }
-  }
-  return bool;
-}
-
 onPrecontent(() => {
-  if (!compareVersion(lib.version, MINVERSION)) {
+  if (checkVersion(lib.version, MINVERSION) < 0) {
     alert(
       `检测到您的本体版本过低，为避免产生不必要的兼容问题，已为您关闭《PS武将》，请及时将本体更新至${MINVERSION}以上版本。`
     );

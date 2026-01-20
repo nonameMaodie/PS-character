@@ -6,3 +6,4 @@ import "./verifyVersion.js";
 import "./playBGM.js";
 import "./importCharacters.js";
 import "./definePingZe.js";
+import "./update.js";
