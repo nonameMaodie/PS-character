@@ -280,7 +280,7 @@ async function checkForUpdates(showAlert = true) {
         const remoteInfo = await getRemoteLatestVersion();
         const { remoteVersion, text, created_at } = remoteInfo;
 
-        const { repoTranlate } = CONFIG;
+        const { giteeOwner, repo, repoTranlate, access_token } = CONFIG;
         if (checkVersion(localVersion, remoteVersion) < 0) {
             const response = await fetch("https://gitee.com/api/v5/markdown", {
                 method: 'POST',
@@ -300,7 +300,7 @@ async function checkForUpdates(showAlert = true) {
                 for (const file of files) {
                     if (file.status === 'removed') {
                         removedFiles.push(file.filename);
-                        await game.promises.removeFile(`${lib.assetURL}extension/${CONFIG.repoTranlate}/${file.filename}`)
+                        await game.promises.removeFile(`${lib.assetURL}extension/${repoTranlate}/${file.filename}`)
                         files.remove(file);
                         console.log("已删除文件：", `【${file.filename}】`);
                     }
@@ -309,7 +309,7 @@ async function checkForUpdates(showAlert = true) {
                 for (const file of files) {
                     const { filename } = file;
                     const progress = createProgress("正在下载：\n", 1, filename);
-                    const downoal_url = `https://gitee.com/api/v5/repos/${CONFIG.giteeOwner}/${CONFIG.repo}/raw/${filename}?access_token=11e1e5d1930f34c6cec7f3f00086f732`;
+                    const downoal_url = `https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/raw/${filename}?access_token=${access_token}`;
                     const buffer = await request(downoal_url, (receivedBytes, total, filename) => {
                         if (typeof filename == "string") {
                             progress.setFileName(filename);
@@ -328,7 +328,7 @@ async function checkForUpdates(showAlert = true) {
                         progress.setProgressMax(max);
                         progress.setProgressValue(received);
                     });
-                    await game.promises.writeFile(buffer, `${lib.assetURL}extension/${CONFIG.repoTranlate}`, filename).catch(async e => { throw e });
+                    await game.promises.writeFile(buffer, `${lib.assetURL}extension/${repoTranlate}`, filename).catch(async e => { throw e });
                     console.log(`下载【${filename}】完成. 文件大小: ${parseSize(buffer.byteLength)}`);
                     progress.remove();
                 }
