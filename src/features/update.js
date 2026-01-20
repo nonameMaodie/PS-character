@@ -267,7 +267,7 @@ let downloading = false;
 /**
  * 检查更新
  */
-async function checkForUpdates() {
+async function checkForUpdates(showAlert = true) {
     try {
         if (downloading) return;
         if (["http://localhost:8080/", "http://127.0.0.1:8080/"].includes(location.href)) {
@@ -343,6 +343,7 @@ async function checkForUpdates() {
             return { updated: true, newVersion: remoteVersion };
         } else {
             console.log(`当前已是最新版本`);
+            if (showAlert) alert(`当前已是最新版本`);
             return { updated: false };
         }
     } catch (error) {
@@ -370,5 +371,5 @@ setConfig({
 });
 
 onArenaReady(function () {
-    if (game.getExtensionConfig("PS武将", "autoCheckForUpdates")) checkForUpdates();
+    if (game.getExtensionConfig("PS武将", "autoCheckForUpdates")) checkForUpdates(false);
 })
