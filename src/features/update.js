@@ -144,6 +144,23 @@ function parseSize(limit) {
 }
 
 /**
+ * 将Markdown转换为HTML
+ * @param { string } text Markdown字符串
+ * @returns { Promise<string> }
+ */
+async function markdownToHTML(text) {
+    const response = await fetch("https://gitee.com/api/v5/markdown", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+    })
+    const html = await response.json();
+    return html;
+}
+
+/**
  * 请求下载文件
  * @param { string } url 下载链接
  * @param { (receivedBytes: number, total: number, filename: string) => void } onProgress 进度更新回调
@@ -217,6 +234,7 @@ async function request(url, onProgress, options = {}) {
 
 /**
  * 获取远程最新版本
+ * @returns { Promise<{remoteVersion: string; text: string; created_at: string;} | null> }
  */
 async function getRemoteLatestVersion() {
     const tryGetRemoteLatestVersion = async function (url) {
@@ -239,6 +257,7 @@ async function getRemoteLatestVersion() {
     } catch (error) {
         console.error('获取Github远程版本失败:', error);
         alert('无法连接到服务器');
+        return null;
     }
 }
 
@@ -266,31 +285,26 @@ async function getCommitsDiffFiles(baseTag, headTag) {
 let downloading = false;
 /**
  * 检查更新
+ * @returns { {updated: boolean, newVersion: string | undefined} }
  */
 async function checkForUpdates(showAlert = true) {
     try {
-        if (downloading) return;
+        if (downloading) return { updated: false };
         if (["http://localhost:8080/", "http://127.0.0.1:8080/"].includes(location.href)) {
-            if (!confirm("检测到你在以开发模式运行游戏，请先在vite.config.ts里关闭热重载，避免写入文件失败。是否继续？")) return;
+            if (!confirm("检测到你在以开发模式运行游戏，请先在vite.config.ts里关闭热重载，避免写入文件失败。是否继续？")) return { updated: false };
         }
         // 1. 获取本地版本
         const localVersion = VERSION;
 
         // 2. 获取远程版本
         const remoteInfo = await getRemoteLatestVersion();
+        if (!remoteInfo) return { updated: false };
         const { remoteVersion, text, created_at } = remoteInfo;
 
         const { giteeOwner, repo, repoTranlate, access_token } = CONFIG;
         if (checkVersion(localVersion, remoteVersion) < 0) {
-            const response = await fetch("https://gitee.com/api/v5/markdown", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ text })
-            })
-            let html = await response.json();
-            html = html.replace(/<br>/g, '\n');
+            const html = (await markdownToHTML(text)).replace(/<br>/g, '\n');
+
             if (confirm(`发现新版本：【${repoTranlate} ${remoteVersion}】(更新时间：${created_at})，是否更新？\n\n${get.plainText(html)}`)) {
                 downloading = true;
 
@@ -334,8 +348,6 @@ async function checkForUpdates(showAlert = true) {
                     progress.remove();
                 }
 
-                downloading = false;
-
                 // 6. 提示更新完成，是否重启
                 if (confirm("更新完成，是否重启？")) {
                     game.reload();
@@ -349,7 +361,10 @@ async function checkForUpdates(showAlert = true) {
         }
     } catch (error) {
         console.error('更新检查失败:', error.message);
-        return { error: error.message };
+        if (showAlert) alert(`检查更新失败：${error.message}`);
+        return { updated: false };
+    } finally {
+        downloading = false;
     }
 }
 
