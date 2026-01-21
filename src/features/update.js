@@ -291,7 +291,7 @@ async function checkForUpdates(showAlert = true) {
     try {
         if (downloading) return { updated: false };
         if (["http://localhost:8080/", "http://127.0.0.1:8080/"].includes(location.href)) {
-            if (!confirm("检测到你在以开发模式运行游戏，请先在vite.config.ts里关闭热重载，避免写入文件失败。是否继续？")) return { updated: false };
+            if (!confirm("检测到你在以开发模式运行游戏，请先在vite.config.ts里关闭热重载，避免写入文件失败（若你已关闭，此提示可以忽略）。是否继续？")) return { updated: false };
         }
         // 1. 获取本地版本
         const localVersion = VERSION;

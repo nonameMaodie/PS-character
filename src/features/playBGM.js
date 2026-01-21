@@ -44,6 +44,7 @@ function playBackgroundMusic() {
     28: "太虚-黄巾之乱.mp3",
     29: "太虚-进军广宗.mp3",
     30: "太虚-长设之战.mp3",
+    31: "关羽之歌.mp3",
   };
   if (item[temp]) {
     ui.backgroundMusic.src =
@@ -109,6 +110,7 @@ setConfig({
       28: "太虚-黄巾之乱",
       29: "太虚-进军广宗",
       30: "太虚-长设之战",
+      31: "关羽之歌",
     },
     onclick(item) {
       game.saveConfig("extension_PS武将_Background_Music", item);
