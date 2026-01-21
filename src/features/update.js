@@ -30,7 +30,7 @@ function createProgress(title, max, fileName, value) {
         top: "auto",
         bottom: "calc(50% - 75px)",
         zIndex: "10",
-        boxShadow: "rgb(0 0 0 / 40 %) 0 0 0 1px, rgb(0 0 0 / 20 %) 0 3px 10px",
+        boxShadow: "rgb(0 0 0 / 40%) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px",
         backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
         borderRadius: "8px",
         overflow: "hidden scroll",
@@ -107,6 +107,92 @@ function createProgress(title, max, fileName, value) {
         }
     };
     return parent;
+}
+
+/**
+ * 创建对话框
+ * @param { string } title 标题
+ * @param { string } content 内容
+ * @param { Array<{text: string, onclick?: function}> } buttons 按钮数组
+ * @returns { object }
+ */
+function createDialog(title, content, buttons = [{ text: "确定" }]) {
+    const dialog = ui.create.div(ui.window, {
+        textAlign: "center",
+        width: "500px",
+        height: "400px",
+        left: "calc(50% - 250px)",
+        top: "auto",
+        bottom: "calc(50% - 200px)",
+        zIndex: "10",
+        boxShadow: "rgb(0 0 0 / 40%) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px",
+        backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
+        borderRadius: "8px",
+    });
+
+    // 可拖动
+    dialog.className = "dialog";
+    Object.setPrototypeOf(dialog, lib.element.Dialog.prototype);
+
+    // 创建dialog标题
+    const dialog_title = ui.create.div(dialog, {
+        height: "50px",
+        width: "100%",
+        left: "0",
+        lineHeight: "50px",
+        fontWeight: "700",
+        fontSize: "1.2em",
+    });
+    dialog_title.innerHTML = title;
+
+    // 创建dialog内容
+    const dialog_content = ui.create.div(dialog, {
+        height: "300px",
+        width: "100%",
+        left: "0",
+        top: "50px",
+        overflow: "hidden scroll",
+    });
+    const dialog_content_shadow = dialog_content.attachShadow({ mode: "open" })
+    const style = document.createElement("style");
+    style.textContent = `
+        ul {
+            text-align: left;
+            line-height: 1.7;
+        }`;
+    dialog_content_shadow.appendChild(style);
+    dialog_content_shadow.innerHTML += content;
+
+    // 创建dialog按钮容器
+    const dialog_buttons = ui.create.div(dialog, {
+        height: "50px",
+        width: "100%",
+        left: "0",
+        top: "350px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "50px",
+    });
+
+    if ((!Array.isArray(buttons)) || !buttons.length) buttons = [{ text: "确定", onclick: () => { } }];
+
+    for (const b of buttons) {
+        const btn = ui.create.div(dialog_buttons, {
+            background: "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35))",
+            color: "white",
+            borderRadius: "4px",
+            padding: "8px 16px",
+            cursor: "pointer",
+            position: "unset"
+        });
+        btn.innerHTML = b.text;
+        btn.onclick = () => {
+            dialog.remove();
+            b.onclick && b.onclick();
+        };
+    }
+    return dialog;
 }
 
 /**
@@ -282,14 +368,18 @@ async function getCommitsDiffFiles(baseTag, headTag) {
     return files
 }
 
-let downloading = false;
+let checking = false;
 /**
  * 检查更新
  * @returns { {updated: boolean, newVersion: string | undefined} }
  */
 async function checkForUpdates(showAlert = true) {
     try {
-        if (downloading) return { updated: false };
+        if (checking) {
+            alert("正在检查更新中，请勿重复操作");
+            return { updated: false };
+        }
+        checking = true;
         if (["http://localhost:8080/", "http://127.0.0.1:8080/"].includes(location.href)) {
             if (!confirm("检测到你在以开发模式运行游戏，请先在vite.config.ts里关闭热重载，避免写入文件失败（若你已关闭，此提示可以忽略）。是否继续？")) return { updated: false };
         }
@@ -303,10 +393,16 @@ async function checkForUpdates(showAlert = true) {
 
         const { giteeOwner, repo, repoTranlate, access_token } = CONFIG;
         if (checkVersion(localVersion, remoteVersion) < 0) {
-            const html = (await markdownToHTML(text)).replace(/<br>/g, '\n');
+            const html = await markdownToHTML(text);
 
-            if (confirm(`发现新版本：【${repoTranlate} ${remoteVersion}】(更新时间：${created_at})，是否更新？\n\n${get.plainText(html)}`)) {
-                downloading = true;
+            const result = await new Promise((resolve) => {
+                createDialog(`发现新版本，是否更新？（更新时间：${created_at}）`, html, [
+                    { text: "取消", onclick: () => { resolve(false) } },
+                    { text: "更新", onclick: () => { resolve(true) } },
+                ])
+            });
+
+            if (result) {
 
                 // 3. 获取差异文件列表
                 const files = await getCommitsDiffFiles(localVersion, remoteVersion);
@@ -364,7 +460,7 @@ async function checkForUpdates(showAlert = true) {
         if (showAlert) alert(`检查更新失败：${error.message}`);
         return { updated: false };
     } finally {
-        downloading = false;
+        checking = false;
     }
 }
 
