@@ -477,11 +477,11 @@ setConfig({
         name: "自动检查更新",
         intro: "开启后每次启动游戏时检查更新",
         onclick(item) {
-            game.saveExtensionConfig("PS武将", "autoCheckForUpdates", item);
+            game.saveExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates", item);
         },
     },
 });
 
 onArenaReady(function () {
-    if (game.getExtensionConfig("PS武将", "autoCheckForUpdates")) checkForUpdates(false);
+    if (game.getExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates")) checkForUpdates(false);
 })
