@@ -112,11 +112,12 @@ function createProgress(title, max, fileName, value) {
 /**
  * 创建对话框
  * @param { string } title 标题
+ * @param { string } prompt 提示
  * @param { string } content 内容
  * @param { Array<{text: string, onclick?: function}> } buttons 按钮数组
  * @returns { object }
  */
-function createDialog(title, content, buttons = [{ text: "确定" }]) {
+function createDialog(title, prompt, content, buttons = [{ text: "确定" }]) {
     const dialog = ui.create.div(ui.window, {
         textAlign: "center",
         width: "500px",
@@ -128,6 +129,7 @@ function createDialog(title, content, buttons = [{ text: "确定" }]) {
         boxShadow: "rgb(0 0 0 / 40%) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px",
         backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
         borderRadius: "8px",
+        backdropFilter: "blur(5px)"
     });
 
     // 可拖动
@@ -136,21 +138,36 @@ function createDialog(title, content, buttons = [{ text: "确定" }]) {
 
     // 创建dialog标题
     const dialog_title = ui.create.div(dialog, {
-        height: "50px",
+        height: "40px",
         width: "100%",
         left: "0",
-        lineHeight: "50px",
+        paddingTop: "15px",
+        boxSizing: "border-box",
         fontWeight: "700",
-        fontSize: "1.2em",
+        fontSize: "1.3em",
     });
     dialog_title.innerHTML = title;
 
-    // 创建dialog内容
-    const dialog_content = ui.create.div(dialog, {
-        height: "300px",
+    // 创建dialog提示
+    const dialog_prompt = ui.create.div(dialog, {
+        height: "30px",
         width: "100%",
         left: "0",
-        top: "50px",
+        lineHeight: "30px",
+        top: "40px",
+        fontSize: "0.92em",
+        borderWidth: "0 0 1px",
+        borderStyle: "solid",
+        borderImage: "linear - gradient(to right, transparent, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0.2) 90%, transparent) 0 1 100%"
+    });
+    dialog_prompt.innerHTML = prompt;
+
+    // 创建dialog内容
+    const dialog_content = ui.create.div(dialog, {
+        height: "280px",
+        width: "100%",
+        left: "0",
+        top: "70px",
         overflow: "hidden scroll",
     });
     const dialog_content_shadow = dialog_content.attachShadow({ mode: "open" })
@@ -247,6 +264,47 @@ async function markdownToHTML(text) {
 }
 
 /**
+ * 创建一个超时请求
+ * @param { string } url 请求地址
+ * @param { object } options 请求选项
+ * @param { number } timeout 超时时间
+ * @returns { Promise<Response> }
+ */
+async function fetchWithTimeout(url, options = {}, timeout = 5000) {
+    // 创建 AbortController 实例
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    // 设置超时定时器
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, timeout);
+
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal, // 传入 signal
+        });
+
+        clearTimeout(timeoutId); // 清除定时器
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response;
+    } catch (error) {
+        clearTimeout(timeoutId); // 确保清除定时器
+
+        if (error.name === 'AbortError') {
+            throw new Error(`请求超时 (${timeout}ms)`);
+        }
+
+        throw error; // 重新抛出其他错误
+    }
+}
+
+/**
  * 请求下载文件
  * @param { string } url 下载链接
  * @param { (receivedBytes: number, total: number, filename: string) => void } onProgress 进度更新回调
@@ -324,11 +382,12 @@ async function request(url, onProgress, options = {}) {
  */
 async function getRemoteLatestVersion() {
     const tryGetRemoteLatestVersion = async function (url) {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url, null, 3000);
         const data = await response.json();
         return {
             remoteVersion: data.tag_name, // 版本号，如：v1.0.0
-            text: data.body,
+            text: data.body, // 更新内容，markdown格式
+            miniCompatibility: data.name?.split('-')?.at(-1), // 最低适配版本号
             created_at: (new Date(data.created_at)).toLocaleDateString('zh-CN') // 更新时间
         };
     };
@@ -337,12 +396,12 @@ async function getRemoteLatestVersion() {
         try {
             return await tryGetRemoteLatestVersion(`https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/releases/latest`);
         } catch (error) {
-            console.error('获取Gitee远程版本失败:', error);
+            console.error('获取Gitee远程版本失败：', error);
             return await tryGetRemoteLatestVersion(`https://api.github.com/repos/${githubOwner}/${repo}/releases/latest`);
         }
     } catch (error) {
-        console.error('获取Github远程版本失败:', error);
-        alert('无法连接到服务器');
+        console.error('获取Github远程版本失败：', error);
+        alert('无法连接到服务器：' + error.message);
         return null;
     }
 }
@@ -353,16 +412,10 @@ async function getRemoteLatestVersion() {
  * @param { string } headTag 结束标签
  * @returns { Promise<Array<{ filename: string, status: string }>> } 差异文件列表
  */
-async function getCommitsDiffFiles(baseTag, headTag) {
+async function getTagsDiffFiles(baseTag, headTag) {
     const { giteeOwner, repo } = CONFIG;
-    // 获取起始的Commit SHA
-    const baseResponse = await fetch(`https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/releases/tags/${baseTag}`)
-    const { target_commitish: baseCommit } = await baseResponse.json();
-    // 获取结束的Commit SHA
-    const headResponse = await fetch(`https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/releases/tags/${headTag}`)
-    const { target_commitish: headCommit } = await headResponse.json();
-    // 获取两个Commit之间的差异
-    const diffResponse = await fetch(`https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/compare/${baseCommit}...${headCommit}`)
+
+    const diffResponse = await fetch(`https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/compare/${baseTag}...${headTag}`)
     const { files } = await diffResponse.json();
 
     return files
@@ -389,14 +442,14 @@ async function checkForUpdates(showAlert = true) {
         // 2. 获取远程版本
         const remoteInfo = await getRemoteLatestVersion();
         if (!remoteInfo) return { updated: false };
-        const { remoteVersion, text, created_at } = remoteInfo;
+        const { remoteVersion, text, miniCompatibility, created_at } = remoteInfo;
 
         const { giteeOwner, repo, repoTranlate, access_token } = CONFIG;
         if (checkVersion(localVersion, remoteVersion) < 0) {
             const html = await markdownToHTML(text);
 
             const result = await new Promise((resolve) => {
-                createDialog(`发现新版本，是否更新？（更新时间：${created_at}）`, html, [
+                createDialog("发现新版本，是否更新？", `（更新时间：${created_at}，最低适配：${miniCompatibility}）`, html, [
                     { text: "取消", onclick: () => { resolve(false) } },
                     { text: "更新", onclick: () => { resolve(true) } },
                 ])
@@ -405,7 +458,7 @@ async function checkForUpdates(showAlert = true) {
             if (result) {
 
                 // 3. 获取差异文件列表
-                const files = await getCommitsDiffFiles(localVersion, remoteVersion);
+                const files = await getTagsDiffFiles(localVersion, remoteVersion);
                 // 4. 删除已删除的文件
                 for (const file of files) {
                     if (file.status === 'removed') {
@@ -420,7 +473,7 @@ async function checkForUpdates(showAlert = true) {
                 for (const file of files) {
                     const { filename } = file;
                     const progress = createProgress("正在下载：\n", 1, filename);
-                    const downoal_url = `https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/raw/${filename}?access_token=${access_token}`;
+                    const downoal_url = `https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/raw/${filename}?access_token=${access_token}$ref=${remoteVersion}`;
                     const buffer = await request(downoal_url, (receivedBytes, total, filename) => {
                         if (typeof filename == "string") {
                             progress.setFileName(filename);
