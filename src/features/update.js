@@ -473,7 +473,7 @@ async function checkForUpdates(showAlert = true) {
                 for (const file of files) {
                     const { filename } = file;
                     const progress = createProgress("正在下载：\n", 1, filename);
-                    const downoal_url = `https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/raw/${filename}?access_token=${access_token}$ref=${remoteVersion}`;
+                    const downoal_url = `https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/raw/${filename}?access_token=${access_token}&ref=${remoteVersion}`;
                     const buffer = await request(downoal_url, (receivedBytes, total, filename) => {
                         if (typeof filename == "string") {
                             progress.setFileName(filename);
