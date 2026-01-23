@@ -158,7 +158,7 @@ function createDialog(title, prompt, content, buttons = [{ text: "确定" }]) {
         fontSize: "0.92em",
         borderWidth: "0 0 1px",
         borderStyle: "solid",
-        borderImage: "linear - gradient(to right, transparent, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0.2) 90%, transparent) 0 1 100%"
+        borderImage: "linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0.2) 90%, transparent) 0 1 100%"
     });
     dialog_prompt.innerHTML = prompt;
 
