@@ -448,11 +448,24 @@ async function checkForUpdates(showAlert = true) {
         if (checkVersion(localVersion, remoteVersion) < 0) {
             const html = await markdownToHTML(text);
 
-            const result = await new Promise((resolve) => {
-                createDialog("发现新版本，是否更新？", `（更新时间：${created_at}，最低适配：${miniCompatibility}）`, html, [
+            const setChoiceList = function (resolve) {
+                const result = [
                     { text: "取消", onclick: () => { resolve(false) } },
                     { text: "更新", onclick: () => { resolve(true) } },
-                ])
+                ];
+                if (!showAlert && game.getExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates")) {
+                    result.unshift({
+                        text: "不再提醒",
+                        onclick: () => {
+                            game.saveExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates", false);
+                            resolve(false);
+                        }
+                    })
+                }
+                return result;
+            }
+            const result = await new Promise((resolve) => {
+                createDialog("发现新版本，是否更新？", `（更新时间：${created_at}，最低适配：${miniCompatibility}）`, html, setChoiceList(resolve))
             });
 
             if (result) {
