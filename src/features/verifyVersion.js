@@ -149,7 +149,7 @@ setPreConfig({
             mutation.attributeName === "class" &&
             switcher.classList.contains("on")
           ) {
-            showChangelog(updateHistory, () => {
+            showChangelog(updateHistory, info.name, () => {
               const popupContainer =
                 ui.window.querySelector(".popup-container");
               if (popupContainer) {
