@@ -1,6 +1,6 @@
 import { lib } from "noname";
 import { hooks } from "./utils/hooks.js";
-import { VERSION } from "./version.js";
+import { info } from "./info.js";
 import "./features/index.js";
 
 lib.init.css(lib.assetURL + "extension/PS武将/css", "extension"); //调用css样式
@@ -49,11 +49,11 @@ export default function () {
         skill: {},
         translate: {},
       },
-      intro: "",
-      author: "九个芒果",
-      diskURL: "",
-      forumURL: "",
-      version: VERSION,
+      intro: info.intro,
+      author: info.author,
+      diskURL: info.diskURL,
+      forumURL: info.forumURL,
+      version: info.version,
     },
     files: { character: [], card: [], skill: [], audio: [] },
     connect: false,

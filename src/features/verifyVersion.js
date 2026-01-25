@@ -1,6 +1,6 @@
 import { game, lib, ui } from "noname";
-import { onPrecontent, setConfig } from "../utils/hooks.js";
-import { MINVERSION, VERSION } from "../version.js";
+import { onPrecontent, setPreConfig } from "../utils/hooks.js";
+import { info } from "../info.js";
 import { showChangelog } from "../utils/changelog.js"
 import { checkVersion } from "../utils/checkVersion.js";
 
@@ -81,9 +81,9 @@ function showChangeLog(version) {
 }
 
 onPrecontent(() => {
-  if (checkVersion(lib.version, MINVERSION) < 0) {
+  if (checkVersion(lib.version, info.minCompatibility) < 0) {
     alert(
-      `检测到您的本体版本过低，为避免产生不必要的兼容问题，已为您关闭《PS武将》，请及时将本体更新至${MINVERSION}以上版本。`
+      `检测到您的本体版本过低，为避免产生不必要的兼容问题，已为您关闭《PS武将》，请及时将本体更新至${info.minCompatibility}以上版本。`
     );
     game.saveExtensionConfig("PS武将", "enable", false);
     game.reload();
@@ -130,9 +130,9 @@ onPrecontent(() => {
 let observed = false;
 
 //更新说明
-setConfig({
+setPreConfig({
   updateInfo: {
-    name: `版本：${VERSION}`,
+    name: `版本：${info.version}`,
     unfrequent: true,
     intro: "查看更新内容",
     init: "1",
@@ -172,7 +172,7 @@ setConfig({
   },
   bd1: {
     clear: true,
-    name: `最低适配：${MINVERSION}`,
+    name: `最低适配：${info.minCompatibility}`,
     nopointer: true,
   },
 });

@@ -1,8 +1,9 @@
 {
-  "name": "PS武将",
-  "author": "九个芒果",
-  "intro": "不开扩展不给看喵",
-  "version": "未知",
-  "diskURL": "",
-  "forumURL": ""
+	"name": "PS武将",
+	"author": "九个芒果",
+	"intro": "本扩展主要是对本体武将进行不同方向的强化设计或重构，设计来源于本人和广大网友。当然，除了对本体武将的重新设计外，本扩展还有一些奇奇怪怪的特殊武将。",
+	"version": "v2.4.3",
+	"minCompatibility": "v1.11.0",
+	"diskURL": "https://gitee.com/ninemangos/PS-character",
+	"forumURL": "https://github.com/nonameMaodie/PS-character"
 }

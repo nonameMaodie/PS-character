@@ -1,6 +1,5 @@
 import "./addNamePrefix.js";
 import "./changeVoices.js";
-import "./extensionIntro.js";
 import "./linesFix.js";
 import "./verifyVersion.js";
 import "./playBGM.js";

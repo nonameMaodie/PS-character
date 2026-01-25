@@ -1,4 +1,4 @@
-import { VERSION } from "../version.js"
+import { info } from "../info.js"
 import { checkVersion } from "../utils/checkVersion.js"
 import { setConfig, onArenaReady } from "../utils/hooks.js"
 import { lib, ui, game } from "noname"
@@ -387,7 +387,7 @@ async function getRemoteLatestVersion() {
         return {
             remoteVersion: data.tag_name, // 版本号，如：v1.0.0
             text: data.body, // 更新内容，markdown格式
-            miniCompatibility: data.name?.split('-')?.at(-1), // 最低适配版本号
+            minCompatibility: data.name?.split('-')?.at(-1), // 最低适配版本号
             created_at: (new Date(data.created_at)).toLocaleDateString('zh-CN') // 更新时间
         };
     };
@@ -437,12 +437,12 @@ async function checkForUpdates(showAlert = true) {
             if (!confirm("检测到你在以开发模式运行游戏，请先在vite.config.ts里关闭热重载，避免写入文件失败（若你已关闭，此提示可以忽略）。是否继续？")) return { updated: false };
         }
         // 1. 获取本地版本
-        const localVersion = VERSION;
+        const localVersion = info.version;
 
         // 2. 获取远程版本
         const remoteInfo = await getRemoteLatestVersion();
         if (!remoteInfo) return { updated: false };
-        const { remoteVersion, text, miniCompatibility, created_at } = remoteInfo;
+        const { remoteVersion, text, minCompatibility, created_at } = remoteInfo;
 
         const { giteeOwner, repo, repoTranlate, access_token } = CONFIG;
         if (checkVersion(localVersion, remoteVersion) < 0) {
@@ -465,7 +465,7 @@ async function checkForUpdates(showAlert = true) {
                 return result;
             }
             const result = await new Promise((resolve) => {
-                createDialog("发现新版本，是否更新？", `（更新时间：${created_at}，最低适配：${miniCompatibility}）`, html, setChoiceList(resolve))
+                createDialog("发现新版本，是否更新？", `（更新时间：${created_at}，最低适配：${minCompatibility}）`, html, setChoiceList(resolve))
             });
 
             if (result) {

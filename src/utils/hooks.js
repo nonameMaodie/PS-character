@@ -2,6 +2,7 @@ const arenaReadyHooks = [];
 const contentHooks = [];
 const prepareHooks = [];
 const precontentHooks = [];
+const preConfigObj = {};
 const configObj = {};
 const helpObj = {};
 export const hooks = {
@@ -9,7 +10,9 @@ export const hooks = {
   contentHooks,
   prepareHooks,
   precontentHooks,
-  configObj,
+  get configObj() {
+    return { ...preConfigObj, ...configObj }
+  },
   helpObj,
 };
 export function onArenaReady(func) {
@@ -23,6 +26,9 @@ export function onPrepare(func) {
 }
 export function onPrecontent(func) {
   precontentHooks.push(func);
+}
+export function setPreConfig(obj) {
+  Object.assign(preConfigObj, obj);
 }
 export function setConfig(obj) {
   Object.assign(configObj, obj);
