@@ -527,7 +527,7 @@ export function createDialog(title, prompt, content, buttons = [{ text: "确定"
   const dialog_content_shadow = dialog_content.attachShadow({ mode: "open" })
   const style = document.createElement("style");
   style.textContent = `
-        ul {
+        ul, ol {
             text-align: left;
             line-height: 1.7;
         }`;

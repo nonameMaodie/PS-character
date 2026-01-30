@@ -246,9 +246,11 @@ async function checkForUpdates(showAlert = true) {
                         progress.setProgressMax(max);
                         progress.setProgressValue(received);
                     });
-                    const buffer = await convertBase64ToArrayBuffer(data.content);
-                    await game.promises.writeFile(buffer, `${lib.assetURL}extension/${repoTranlate}`, filename).catch(async e => { throw e });
-                    console.log(`下载【${filename}】完成. 文件大小: ${convertNumToSize(data.size ?? buffer.byteLength)}`);
+                    if (data.content && typeof data.content === "string") {
+                        const buffer = await convertBase64ToArrayBuffer(data.content);
+                        await game.promises.writeFile(buffer, `${lib.assetURL}extension/${repoTranlate}`, filename).catch(async e => { throw e });
+                        console.log(`下载【${filename}】完成. 文件大小: ${convertNumToSize(data.size ?? buffer.byteLength)}`);
+                    }
                     progress.remove();
                 }
 
