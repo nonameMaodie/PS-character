@@ -1,7 +1,7 @@
 import { game, lib, ui } from "noname";
 import { onPrecontent, setPreConfig } from "../utils/hooks.js";
 import { info } from "../info.js";
-import { showChangelog } from "../utils/changelog.js"
+import { showChangelog } from "../utils/dom.js"
 import { checkVersion } from "../utils/checkVersion.js";
 
 let updateHistory = null;

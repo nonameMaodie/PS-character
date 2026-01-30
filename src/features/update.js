@@ -1,267 +1,16 @@
 import { info } from "../info.js"
 import { checkVersion } from "../utils/checkVersion.js"
 import { setConfig, onArenaReady } from "../utils/hooks.js"
+import { convertMarkdownToHTML, convertBase64ToArrayBuffer, convertNumToSize } from "../utils/convert.js"
+import { createProgress, createDialog } from "../utils/dom.js"
 import { lib, ui, game } from "noname"
 
 const CONFIG = {
     giteeOwner: 'ninemangos',
     githubOwner: 'nonameMaodie',
     repo: 'PS-character',
-    repoTranlate: 'PS武将',
-    access_token: '11e1e5d1930f34c6cec7f3f00086f732'
+    repoTranlate: 'PS武将'
 };
-
-/**
- * 创建进度条
- * @param { string } [title] 标题
- * @param { string | number } [max] 最大值
- * @param { string } [fileName] 文件名
- * @param { string | number } [value] 当前进度
- * @returns { progress }
- */
-function createProgress(title, max, fileName, value) {
-    /** @type { progress } */
-    // @ts-expect-error ignore
-    const parent = ui.create.div(ui.window, {
-        textAlign: "center",
-        width: "300px",
-        height: "150px",
-        left: "calc(50% - 150px)",
-        top: "auto",
-        bottom: "calc(50% - 75px)",
-        zIndex: "10",
-        boxShadow: "rgb(0 0 0 / 40%) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px",
-        backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
-        borderRadius: "8px",
-        overflow: "hidden scroll",
-    });
-
-    // 可拖动
-    parent.className = "dialog";
-    Object.setPrototypeOf(parent, lib.element.Dialog.prototype);
-
-    const container = ui.create.div(parent, {
-        position: "absolute",
-        top: "0",
-        left: "0",
-        width: "100%",
-        height: "100%",
-    });
-
-    container.ontouchstart = ui.click.dialogtouchStart;
-    container.ontouchmove = ui.click.touchScroll;
-    // @ts-expect-error ignore
-    container.style.WebkitOverflowScrolling = "touch";
-    parent.ontouchstart = ui.click.dragtouchdialog;
-
-    const caption = ui.create.div(container, "", title, {
-        position: "relative",
-        paddingTop: "8px",
-        fontSize: "20px",
-    });
-
-    ui.create.node("br", container);
-
-    const tip = ui.create.div(container, {
-        position: "relative",
-        paddingTop: "8px",
-        fontSize: "20px",
-        width: "100%",
-    });
-
-    const file = ui.create.node("span", tip, "", fileName);
-    file.style.width = file.style.maxWidth = "100%";
-    ui.create.node("br", tip);
-    const index = ui.create.node("span", tip, "", String(value || "0"));
-    ui.create.node("span", tip, "", "/");
-    const maxSpan = ui.create.node("span", tip, "", String(max || "未知"));
-
-    ui.create.node("br", container);
-
-    const progress = ui.create.node("progress.progress", container);
-    progress.setAttribute("value", value || "0");
-    progress.setAttribute("max", max);
-
-    parent.getTitle = () => caption.innerText;
-    parent.setTitle = title => (caption.innerHTML = title);
-    parent.getFileName = () => file.innerText;
-    parent.setFileName = name => (file.innerHTML = name);
-    parent.getProgressValue = () => progress.value;
-    parent.setProgressValue = value => (progress.value = index.innerHTML = value);
-    parent.getProgressMax = () => progress.max;
-    parent.setProgressMax = max => (progress.max = maxSpan.innerHTML = max);
-    parent.autoSetFileNameFromArray = fileNameList => {
-        if (fileNameList.length > 2) {
-            parent.setFileName(
-                fileNameList
-                    .slice(0, 2)
-                    .concat(`......等${fileNameList.length - 2}个文件`)
-                    .join("<br/>")
-            );
-        } else if (fileNameList.length == 2) {
-            parent.setFileName(fileNameList.join("<br/>"));
-        } else if (fileNameList.length == 1) {
-            parent.setFileName(fileNameList[0]);
-        } else {
-            parent.setFileName("当前没有正在下载的文件");
-        }
-    };
-    return parent;
-}
-
-/**
- * 创建对话框
- * @param { string } title 标题
- * @param { string } prompt 提示
- * @param { string } content 内容
- * @param { Array<{text: string, onclick?: function}> } buttons 按钮数组
- * @returns { object }
- */
-function createDialog(title, prompt, content, buttons = [{ text: "确定" }]) {
-    const dialog = ui.create.div(ui.window, {
-        textAlign: "center",
-        width: "500px",
-        height: "400px",
-        left: "calc(50% - 250px)",
-        top: "auto",
-        bottom: "calc(50% - 200px)",
-        zIndex: "10",
-        boxShadow: "rgb(0 0 0 / 40%) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px",
-        backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
-        borderRadius: "8px",
-        backdropFilter: "blur(5px)"
-    });
-
-    // 可拖动
-    dialog.className = "dialog";
-    Object.setPrototypeOf(dialog, lib.element.Dialog.prototype);
-
-    // 创建dialog标题
-    const dialog_title = ui.create.div(dialog, {
-        height: "40px",
-        width: "100%",
-        left: "0",
-        paddingTop: "15px",
-        boxSizing: "border-box",
-        fontWeight: "700",
-        fontSize: "1.3em",
-    });
-    dialog_title.innerHTML = title;
-
-    // 创建dialog提示
-    const dialog_prompt = ui.create.div(dialog, {
-        height: "30px",
-        width: "100%",
-        left: "0",
-        lineHeight: "30px",
-        top: "40px",
-        fontSize: "0.92em",
-        borderWidth: "0 0 1px",
-        borderStyle: "solid",
-        borderImage: "linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0.2) 90%, transparent) 0 1 100%"
-    });
-    dialog_prompt.innerHTML = prompt;
-
-    // 创建dialog内容
-    const dialog_content = ui.create.div(dialog, {
-        height: "280px",
-        width: "100%",
-        left: "0",
-        top: "70px",
-        overflow: "hidden scroll",
-    });
-    const dialog_content_shadow = dialog_content.attachShadow({ mode: "open" })
-    const style = document.createElement("style");
-    style.textContent = `
-        ul {
-            text-align: left;
-            line-height: 1.7;
-        }`;
-    dialog_content_shadow.appendChild(style);
-    dialog_content_shadow.innerHTML += content;
-
-    // 创建dialog按钮容器
-    const dialog_buttons = ui.create.div(dialog, {
-        height: "50px",
-        width: "100%",
-        left: "0",
-        top: "350px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "50px",
-    });
-
-    if ((!Array.isArray(buttons)) || !buttons.length) buttons = [{ text: "确定", onclick: () => { } }];
-
-    for (const b of buttons) {
-        const btn = ui.create.div(dialog_buttons, {
-            background: "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35))",
-            color: "white",
-            borderRadius: "4px",
-            padding: "8px 16px",
-            cursor: "pointer",
-            position: "unset"
-        });
-        btn.innerHTML = b.text;
-        btn.onclick = () => {
-            dialog.remove();
-            b.onclick && b.onclick();
-        };
-    }
-    return dialog;
-}
-
-/**
- * 将文件大小转换为易读的格式
- * @param { number } limit 字节数
- * @returns 
- */
-function parseSize(limit) {
-    let size = "";
-    if (limit < 1 * 1024) {
-        // 小于1KB，则转化成B
-        size = limit.toFixed(2) + "B";
-    } else if (limit < 1 * 1024 * 1024) {
-        // 小于1MB，则转化成KB
-        size = (limit / 1024).toFixed(2) + "KB";
-    } else if (limit < 1 * 1024 * 1024 * 1024) {
-        // 小于1GB，则转化成MB
-        size = (limit / (1024 * 1024)).toFixed(2) + "MB";
-    } else {
-        // 其他转化成GB
-        size = (limit / (1024 * 1024 * 1024)).toFixed(2) + "GB";
-    }
-
-    // 转成字符串
-    let sizeStr = size + "";
-    // 获取小数点处的索引
-    let index = sizeStr.indexOf(".");
-    // 获取小数点后两位的值
-    let dou = sizeStr.slice(index + 1, 2);
-    // 判断后两位是否为00，如果是则删除00
-    if (dou == "00") {
-        return sizeStr.slice(0, index) + sizeStr.slice(index + 3, 2);
-    }
-    return size;
-}
-
-/**
- * 将Markdown转换为HTML
- * @param { string } text Markdown字符串
- * @returns { Promise<string> }
- */
-async function markdownToHTML(text) {
-    const response = await fetch("https://gitee.com/api/v5/markdown", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text })
-    })
-    const html = await response.json();
-    return html;
-}
 
 /**
  * 创建一个超时请求
@@ -309,7 +58,7 @@ async function fetchWithTimeout(url, options = {}, timeout = 5000) {
  * @param { string } url 下载链接
  * @param { (receivedBytes: number, total: number, filename: string) => void } onProgress 进度更新回调
  * @param { object } options fetch请求配置
- * @returns { Promise<ArrayBuffer> }
+ * @returns { Promise<object> } 解析后的JSON数据
  */
 async function request(url, onProgress, options = {}) {
     const response = await fetch(
@@ -331,6 +80,8 @@ async function request(url, onProgress, options = {}) {
     if (isNaN(total)) { total = null; }
     // @ts-expect-error ignore
     const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let jsonString = '';
     let filename;
     try {
         // @ts-expect-error ignore
@@ -339,41 +90,31 @@ async function request(url, onProgress, options = {}) {
         /* empty */
     }
     let receivedBytes = 0;
-    let chunks = [];
 
-    while (true) {
-        // 使用ReadableStream来获取部分数据并计算进度
-        const { done, value } = await reader.read();
+    try {
+        while (true) {
+            // 使用ReadableStream来获取部分数据并计算进度
+            const { done, value } = await reader.read();
+            if (done) break;
 
-        if (done) {
-            break;
-        }
+            jsonString += decoder.decode(value, { stream: true });
 
-        chunks.push(value);
-        receivedBytes += value.length;
-
-        if (typeof onProgress == "function") {
-            if (total) {
-                // const progress = (receivedBytes / total) * 100;
-                onProgress(receivedBytes, total, filename);
-            } else {
-                onProgress(receivedBytes, void 0, filename);
+            receivedBytes += value.length;
+            if (typeof onProgress == "function") {
+                if (total) {
+                    // const progress = (receivedBytes / total) * 100;
+                    onProgress(receivedBytes, total, filename);
+                } else {
+                    onProgress(receivedBytes, void 0, filename);
+                }
             }
         }
+
+        jsonString += decoder.decode();
+        return JSON.parse(jsonString);
+    } finally {
+        reader.releaseLock();
     }
-
-    // 合并所有数据块
-    const array = new Uint8Array(receivedBytes);
-    let offset = 0;
-
-    for (const chunk of chunks) {
-        array.set(new Uint8Array(chunk), offset);
-        offset += chunk.byteLength;
-    }
-    const { buffer } = array
-
-    // 返回ArrayBuffer
-    return buffer;
 }
 
 /**
@@ -444,9 +185,9 @@ async function checkForUpdates(showAlert = true) {
         if (!remoteInfo) return { updated: false };
         const { remoteVersion, text, minCompatibility, created_at } = remoteInfo;
 
-        const { giteeOwner, repo, repoTranlate, access_token } = CONFIG;
+        const { giteeOwner, repo, repoTranlate } = CONFIG;
         if (checkVersion(localVersion, remoteVersion) < 0) {
-            const html = await markdownToHTML(text);
+            const html = await convertMarkdownToHTML(text);
 
             const setChoiceList = function (resolve) {
                 const result = [
@@ -472,7 +213,7 @@ async function checkForUpdates(showAlert = true) {
 
                 // 3. 获取差异文件列表
                 const files = await getTagsDiffFiles(localVersion, remoteVersion);
-                // 4. 删除已删除的文件
+                // 4. 删除最新版本已被删除的文件
                 for (const file of files) {
                     if (file.status === 'removed') {
                         files.remove(file);
@@ -482,12 +223,12 @@ async function checkForUpdates(showAlert = true) {
                         } catch {/*empty*/ }
                     }
                 }
-                // 5. 下载新增或被修改的文件
+                // 5. 下载最新版本的新增或被修改的文件
                 for (const file of files) {
                     const { filename } = file;
                     const progress = createProgress("正在下载：\n", 1, filename);
-                    const downoal_url = `https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/raw/${filename}?access_token=${access_token}&ref=${remoteVersion}`;
-                    const buffer = await request(downoal_url, (receivedBytes, total, filename) => {
+                    const url = `https://gitee.com/api/v5/repos/${giteeOwner}/${repo}/contents/${filename}?ref=${remoteVersion}`;
+                    const data = await request(url, (receivedBytes, total, filename) => {
                         if (typeof filename == "string") {
                             progress.setFileName(filename);
                         }
@@ -505,8 +246,9 @@ async function checkForUpdates(showAlert = true) {
                         progress.setProgressMax(max);
                         progress.setProgressValue(received);
                     });
+                    const buffer = await convertBase64ToArrayBuffer(data.content);
                     await game.promises.writeFile(buffer, `${lib.assetURL}extension/${repoTranlate}`, filename).catch(async e => { throw e });
-                    console.log(`下载【${filename}】完成. 文件大小: ${parseSize(buffer.byteLength)}`);
+                    console.log(`下载【${filename}】完成. 文件大小: ${convertNumToSize(data.size ?? buffer.byteLength)}`);
                     progress.remove();
                 }
 

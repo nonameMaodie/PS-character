@@ -363,3 +363,205 @@ export function showChangelog(data, extname, onClose = () => { }) {
   `;
   new ChangelogShadowDOM(changelog, data, extname, onClose);
 }
+
+
+/**
+ * 创建进度条
+ * @param { string } [title] 标题
+ * @param { string | number } [max] 最大值
+ * @param { string } [fileName] 文件名
+ * @param { string | number } [value] 当前进度
+ * @returns { progress }
+ */
+export function createProgress(title, max, fileName, value) {
+  /** @type { progress } */
+  // @ts-expect-error ignore
+  const parent = ui.create.div(ui.window, {
+    textAlign: "center",
+    width: "300px",
+    height: "150px",
+    left: "calc(50% - 150px)",
+    top: "auto",
+    bottom: "calc(50% - 75px)",
+    zIndex: "10",
+    boxShadow: "rgb(0 0 0 / 40%) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px",
+    backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
+    borderRadius: "8px",
+    overflow: "hidden scroll",
+  });
+
+  // 可拖动
+  parent.className = "dialog";
+  Object.setPrototypeOf(parent, lib.element.Dialog.prototype);
+
+  const container = ui.create.div(parent, {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+  });
+
+  container.ontouchstart = ui.click.dialogtouchStart;
+  container.ontouchmove = ui.click.touchScroll;
+  // @ts-expect-error ignore
+  container.style.WebkitOverflowScrolling = "touch";
+  parent.ontouchstart = ui.click.dragtouchdialog;
+
+  const caption = ui.create.div(container, "", title, {
+    position: "relative",
+    paddingTop: "8px",
+    fontSize: "20px",
+  });
+
+  ui.create.node("br", container);
+
+  const tip = ui.create.div(container, {
+    position: "relative",
+    paddingTop: "8px",
+    fontSize: "20px",
+    width: "100%",
+  });
+
+  const file = ui.create.node("span", tip, "", fileName);
+  file.style.width = file.style.maxWidth = "100%";
+  ui.create.node("br", tip);
+  const index = ui.create.node("span", tip, "", String(value || "0"));
+  ui.create.node("span", tip, "", "/");
+  const maxSpan = ui.create.node("span", tip, "", String(max || "未知"));
+
+  ui.create.node("br", container);
+
+  const progress = ui.create.node("progress.progress", container);
+  progress.setAttribute("value", value || "0");
+  progress.setAttribute("max", max);
+
+  parent.getTitle = () => caption.innerText;
+  parent.setTitle = title => (caption.innerHTML = title);
+  parent.getFileName = () => file.innerText;
+  parent.setFileName = name => (file.innerHTML = name);
+  parent.getProgressValue = () => progress.value;
+  parent.setProgressValue = value => (progress.value = index.innerHTML = value);
+  parent.getProgressMax = () => progress.max;
+  parent.setProgressMax = max => (progress.max = maxSpan.innerHTML = max);
+  parent.autoSetFileNameFromArray = fileNameList => {
+    if (fileNameList.length > 2) {
+      parent.setFileName(
+        fileNameList
+          .slice(0, 2)
+          .concat(`......等${fileNameList.length - 2}个文件`)
+          .join("<br/>")
+      );
+    } else if (fileNameList.length == 2) {
+      parent.setFileName(fileNameList.join("<br/>"));
+    } else if (fileNameList.length == 1) {
+      parent.setFileName(fileNameList[0]);
+    } else {
+      parent.setFileName("当前没有正在下载的文件");
+    }
+  };
+  return parent;
+}
+
+/**
+ * 创建对话框
+ * @param { string } title 标题
+ * @param { string } prompt 提示
+ * @param { string } content 内容
+ * @param { Array<{text: string, onclick?: function}> } buttons 按钮数组
+ * @returns { object }
+ */
+export function createDialog(title, prompt, content, buttons = [{ text: "确定" }]) {
+  const dialog = ui.create.div(ui.window, {
+    textAlign: "center",
+    width: "500px",
+    height: "400px",
+    left: "calc(50% - 250px)",
+    top: "auto",
+    bottom: "calc(50% - 200px)",
+    zIndex: "10",
+    boxShadow: "rgb(0 0 0 / 40%) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px",
+    backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
+    borderRadius: "8px",
+    backdropFilter: "blur(5px)"
+  });
+
+  // 可拖动
+  dialog.className = "dialog";
+  Object.setPrototypeOf(dialog, lib.element.Dialog.prototype);
+
+  // 创建dialog标题
+  const dialog_title = ui.create.div(dialog, {
+    height: "40px",
+    width: "100%",
+    left: "0",
+    paddingTop: "15px",
+    boxSizing: "border-box",
+    fontWeight: "700",
+    fontSize: "1.3em",
+  });
+  dialog_title.innerHTML = title;
+
+  // 创建dialog提示
+  const dialog_prompt = ui.create.div(dialog, {
+    height: "30px",
+    width: "100%",
+    left: "0",
+    lineHeight: "30px",
+    top: "40px",
+    fontSize: "0.92em",
+    borderWidth: "0 0 1px",
+    borderStyle: "solid",
+    borderImage: "linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0.2) 90%, transparent) 0 1 100%"
+  });
+  dialog_prompt.innerHTML = prompt;
+
+  // 创建dialog内容
+  const dialog_content = ui.create.div(dialog, {
+    height: "280px",
+    width: "100%",
+    left: "0",
+    top: "70px",
+    overflow: "hidden scroll",
+  });
+  const dialog_content_shadow = dialog_content.attachShadow({ mode: "open" })
+  const style = document.createElement("style");
+  style.textContent = `
+        ul {
+            text-align: left;
+            line-height: 1.7;
+        }`;
+  dialog_content_shadow.appendChild(style);
+  dialog_content_shadow.innerHTML += content;
+
+  // 创建dialog按钮容器
+  const dialog_buttons = ui.create.div(dialog, {
+    height: "50px",
+    width: "100%",
+    left: "0",
+    top: "350px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "50px",
+  });
+
+  if ((!Array.isArray(buttons)) || !buttons.length) buttons = [{ text: "确定", onclick: () => { } }];
+
+  for (const b of buttons) {
+    const btn = ui.create.div(dialog_buttons, {
+      background: "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35))",
+      color: "white",
+      borderRadius: "4px",
+      padding: "8px 16px",
+      cursor: "pointer",
+      position: "unset"
+    });
+    btn.innerHTML = b.text;
+    btn.onclick = () => {
+      dialog.remove();
+      b.onclick && b.onclick();
+    };
+  }
+  return dialog;
+}
