@@ -215,13 +215,15 @@ async function checkForUpdates(showAlert = true) {
                 // 3. 获取差异文件列表
                 const files = await getTagsDiffFiles(localVersion, remoteVersion);
                 // 4. 删除最新版本已被删除的文件
-                for (const file of files) {
-                    if (file.status === 'removed') {
-                        files.remove(file);
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].status === 'removed') {
+                        const filename = files[i].filename;
+                        files.splice(i, 1);
+                        i--;
                         try {
-                            await game.promises.removeFile(`${lib.assetURL}extension/${repoTranlate}/${file.filename}`)
-                            console.log("已删除文件：", `【${file.filename}】`);
-                        } catch {/*empty*/ }
+                            await game.promises.removeFile(`${lib.assetURL}extension/${repoTranlate}/${filename}`)
+                            console.log("已删除文件：", `【${filename}】`);
+                        } catch {/*empty */ }
                     }
                 }
                 // 5. 下载最新版本的新增或被修改的文件
