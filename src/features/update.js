@@ -128,7 +128,7 @@ async function getRemoteLatestVersion() {
         return {
             remoteVersion: data.tag_name, // 版本号，如：v1.0.0
             text: data.body, // 更新内容，markdown格式
-            minCompatibility: data.name?.split('-')?.at(-1), // 最低适配版本号
+            minCompatibility: data?.name?.includes('-') ? data.name?.split('-')?.at(-1) : null, // 最低适配版本号
             created_at: (new Date(data.created_at)).toLocaleDateString('zh-CN') // 更新时间
         };
     };
@@ -174,7 +174,7 @@ async function checkForUpdates(showAlert = true) {
             return { updated: false };
         }
         checking = true;
-        if (["http://localhost:8080/", "http://127.0.0.1:8080/"].includes(location.href)) {
+        if (["http://localhost:8080", "http://127.0.0.1:8080"].some(url => location.href.startsWith(url))) {
             if (!confirm("检测到你在以开发模式运行游戏，请先在vite.config.ts里关闭热重载，避免写入文件失败（若你已关闭，此提示可以忽略）。是否继续？")) return { updated: false };
         }
         // 1. 获取本地版本
@@ -189,14 +189,14 @@ async function checkForUpdates(showAlert = true) {
         if (checkVersion(localVersion, remoteVersion) < 0) {
             const html = await convertMarkdownToHTML(text);
 
-            const setChoiceList = function (resolve) {
+            const getChoiceList = function (resolve) {
                 const result = [
                     { text: "取消", onclick: () => { resolve(false) } },
                     { text: "更新", onclick: () => { resolve(true) } },
                 ];
                 if (!showAlert && game.getExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates")) {
                     result.unshift({
-                        text: "不再提醒",
+                        text: "取消并关闭此提醒",
                         onclick: () => {
                             game.saveExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates", false);
                             resolve(false);
@@ -205,8 +205,9 @@ async function checkForUpdates(showAlert = true) {
                 }
                 return result;
             }
+            const prompt = `（更新时间：${created_at}` + (minCompatibility ? `，最低适配：${minCompatibility}）` : "）");
             const result = await new Promise((resolve) => {
-                createDialog("发现新版本，是否更新？", `（更新时间：${created_at}，最低适配：${minCompatibility}）`, html, setChoiceList(resolve))
+                createDialog("发现新版本，是否更新？", prompt, html, getChoiceList(resolve))
             });
 
             if (result) {
