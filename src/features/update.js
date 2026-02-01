@@ -9,7 +9,7 @@ const CONFIG = {
     giteeOwner: 'ninemangos',
     githubOwner: 'nonameMaodie',
     repo: 'PS-character',
-    repoTranlate: 'PS武将'
+    extensionName: 'PS武将'
 };
 
 /**
@@ -185,7 +185,7 @@ async function checkForUpdates(showAlert = true) {
         if (!remoteInfo) return { updated: false };
         const { remoteVersion, text, minCompatibility, created_at } = remoteInfo;
 
-        const { giteeOwner, repo, repoTranlate } = CONFIG;
+        const { giteeOwner, repo, extensionName } = CONFIG;
         if (checkVersion(localVersion, remoteVersion) < 0) {
             const html = await convertMarkdownToHTML(text);
 
@@ -194,11 +194,11 @@ async function checkForUpdates(showAlert = true) {
                     { text: "取消", onclick: () => { resolve(false) } },
                     { text: "更新", onclick: () => { resolve(true) } },
                 ];
-                if (!showAlert && game.getExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates")) {
+                if (!showAlert && game.getExtensionConfig(CONFIG.extensionName, "autoCheckForUpdates")) {
                     result.unshift({
                         text: "取消并关闭此提醒",
                         onclick: () => {
-                            game.saveExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates", false);
+                            game.saveExtensionConfig(CONFIG.extensionName, "autoCheckForUpdates", false);
                             resolve(false);
                         }
                     })
@@ -221,7 +221,7 @@ async function checkForUpdates(showAlert = true) {
                         files.splice(i, 1);
                         i--;
                         try {
-                            await game.promises.removeFile(`${lib.assetURL}extension/${repoTranlate}/${filename}`)
+                            await game.promises.removeFile(`${lib.assetURL}extension/${extensionName}/${filename}`)
                             console.log("已删除文件：", `【${filename}】`);
                         } catch {/*empty */ }
                     }
@@ -251,7 +251,7 @@ async function checkForUpdates(showAlert = true) {
                     });
                     if (data.content && typeof data.content === "string") {
                         const buffer = await convertBase64ToArrayBuffer(data.content);
-                        await game.promises.writeFile(buffer, `${lib.assetURL}extension/${repoTranlate}`, filename).catch(async e => { throw e });
+                        await game.promises.writeFile(buffer, `${lib.assetURL}extension/${extensionName}`, filename).catch(async e => { throw e });
                         console.log(`下载【${filename}】完成. 文件大小: ${convertNumToSize(data.size ?? buffer.byteLength)}`);
                     }
                     progress.remove();
@@ -290,11 +290,11 @@ setConfig({
         name: "自动检查更新",
         intro: "开启后每次启动游戏时检查更新",
         onclick(item) {
-            game.saveExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates", item);
+            game.saveExtensionConfig(CONFIG.extensionName, "autoCheckForUpdates", item);
         },
     },
 });
 
 onArenaReady(function () {
-    if (game.getExtensionConfig(CONFIG.repoTranlate, "autoCheckForUpdates")) checkForUpdates(false);
+    if (game.getExtensionConfig(CONFIG.extensionName, "autoCheckForUpdates")) checkForUpdates(false);
 })
